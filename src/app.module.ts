@@ -19,6 +19,9 @@ import { User } from './users/users.entity';
       database: process.env.POSTGRES_DB,
       entities: [User],
       synchronize: process.env.NODE_ENV !== 'production',
+      ssl: {
+        rejectUnauthorized: false,
+      },
     }),
     UsersModule,
   ],
