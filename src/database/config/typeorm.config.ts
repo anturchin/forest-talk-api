@@ -9,7 +9,7 @@ export const typeOrmConfig = (configService: ConfigService): TypeOrmModuleOption
   username: configService.get('POSTGRES_USER'),
   password: configService.get('POSTGRES_PASSWORD'),
   database: configService.get('POSTGRES_DB'),
-  entities: [path.resolve(`${__dirname}/../**/**.entity{.ts,.js}`)],
+  entities: [path.resolve(`${__dirname}/../../**/**.entity{.ts,.js}`)],
   migrations: [path.resolve(`${__dirname}/../migrations/*{.ts,.js}`)],
   synchronize: false,
   migrationsRun: true,

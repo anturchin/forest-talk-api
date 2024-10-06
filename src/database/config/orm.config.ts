@@ -11,7 +11,7 @@ export default new DataSource({
   username: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
   database: process.env.POSTGRES_DB,
-  entities: [path.resolve(`${__dirname}/../**/**.entity{.ts,.js}`)],
+  entities: [path.resolve(`${__dirname}/../../**/**.entity{.ts,.js}`)],
   migrations: [path.resolve(`${__dirname}/../migrations/*{.ts,.js}`)],
   synchronize: false,
   logging: true,
