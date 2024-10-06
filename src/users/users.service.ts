@@ -14,13 +14,16 @@ import { CreateUserDto } from './dto/create-users.dto';
 import { UpdateUserDto } from './dto/update-users.dto';
 import { User } from './users.entity';
 import { DEFAULT_SALT, ErrorMessages } from '../constants';
+import { RedisService } from '../redis/redis.service';
+import { RedisKeys } from '../interfaces';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly redisService: RedisService
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -33,7 +36,15 @@ export class UsersService {
       password_hash: passwordHash,
       created_at: new Date(),
     });
-    return await this.usersRepository.save(user);
+
+    const savedUser = await this.usersRepository.save(user);
+
+    await this.redisService.set(
+      `${RedisKeys.USER_KEY_PREFIX}${savedUser.user_id}`,
+      JSON.stringify(savedUser)
+    );
+
+    return savedUser;
   }
 
   async findAll(): Promise<User[]> {
@@ -43,10 +54,16 @@ export class UsersService {
   async findOne(id: number): Promise<User> {
     this.validateId(id);
 
+    const cachedUser = await this.redisService.get(`${RedisKeys.USER_KEY_PREFIX}${id}`);
+    if (cachedUser) {
+      return JSON.parse(cachedUser);
+    }
+
     const user = await this.usersRepository.findOne({ where: { user_id: id } });
     if (!user) {
       throw new NotFoundException(ErrorMessages.USER_NOT_FOUND(id));
     }
+    await this.redisService.set(`${RedisKeys.USER_KEY_PREFIX}${id}`, JSON.stringify(user));
     return user;
   }
 
@@ -70,12 +87,17 @@ export class UsersService {
     }
 
     await this.usersRepository.update(id, updatedUser);
-    return await this.findOne(id);
+    const newUser = await this.findOne(id);
+
+    await this.redisService.set(`${RedisKeys.USER_KEY_PREFIX}${id}`, JSON.stringify(newUser));
+    return newUser;
   }
 
   async remove(id: number): Promise<void> {
     await this.findOne(id);
     await this.usersRepository.delete(id);
+
+    await this.redisService.delete(`${RedisKeys.USER_KEY_PREFIX}${id}`);
   }
 
   private validateId(id: number): void {
