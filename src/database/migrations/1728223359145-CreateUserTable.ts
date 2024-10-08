@@ -6,6 +6,8 @@ export class CreateUserTable1728223359145 implements MigrationInterface {
       user_id BIGINT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
       email VARCHAR(255) NOT NULL UNIQUE,
       password_hash VARCHAR(255) NOT NULL,
+      public_key TEXT NOT NULL,
+      private_key TEXT NOT NULL,
       is_online BOOLEAN NOT NULL DEFAULT FALSE,
       last_login TIMESTAMP NOT NULL,
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP

@@ -7,9 +7,13 @@ export class UpdateUserDto {
   @IsEmail()
   email?: string;
 
-  @ApiProperty({ description: 'Пароль пользователя', example: 'NewQwe123456!', required: false })
+  @ApiProperty({
+    description: 'Пароль пользователя',
+    example: 'Хеш пароля пользователя',
+    required: false,
+  })
   @IsOptional()
-  password?: string;
+  password_hash?: string;
 
   @ApiProperty({ description: 'Статус онлайн', example: false, required: false })
   @IsOptional()

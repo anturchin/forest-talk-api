@@ -15,6 +15,14 @@ export class User {
   @Column({ type: 'varchar', length: 255, nullable: false })
   password_hash: string;
 
+  @ApiProperty({ type: 'string', description: 'Публичный ключ пользователя' })
+  @Column({ type: 'text', nullable: false })
+  public_key: string;
+
+  @ApiProperty({ type: 'string', description: 'Приватный ключ пользователя' })
+  @Column({ type: 'text', nullable: false })
+  private_key: string;
+
   @ApiProperty({
     type: 'boolean',
     description: 'Статус пользователя (в сети/не в сети)',

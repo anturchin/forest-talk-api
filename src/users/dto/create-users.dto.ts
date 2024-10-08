@@ -6,9 +6,17 @@ export class CreateUserDto {
   @IsEmail()
   email: string;
 
-  @ApiProperty({ description: 'Пароль пользователя', example: 'Qwe123456!' })
+  @ApiProperty({ description: 'Пароль пользователя', example: 'Хеш пароля пользователя' })
   @IsNotEmpty()
-  password: string;
+  password_hash: string;
+
+  @ApiProperty({ description: 'Публичный ключ', example: 'Публичный ключ пользователя' })
+  @IsNotEmpty()
+  public_key: string;
+
+  @ApiProperty({ description: 'Приватный ключ', example: 'Приватный ключ пользователя' })
+  @IsNotEmpty()
+  private_key: string;
 
   @ApiProperty({ description: 'Статус онлайн', example: false, required: false })
   @IsBoolean()

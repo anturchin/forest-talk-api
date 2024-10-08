@@ -1,5 +1,3 @@
-export const DEFAULT_SALT = 10;
-
 export const ErrorMessages = {
   INVALID_ID: 'Некорректный формат для поля id, должно быть число',
   USER_NOT_FOUND: (id: number) => `Пользователь с id ${id} не найден`,
