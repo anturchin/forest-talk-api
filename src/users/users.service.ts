@@ -11,7 +11,7 @@ import { CreateUserDto } from './dto/create-users.dto';
 import { UpdateUserDto } from './dto/update-users.dto';
 import { DEFAULT_CACHE_TTL, ErrorMessages } from '../constants';
 import { RedisService } from '../redis/redis.service';
-import { CreateUser, RedisKeys } from '../interfaces';
+import { RedisKeys } from '../interfaces';
 import { PrismaService } from '../prisma/prisma.service';
 import { serializeBigInt } from '../utils/serialize.utils';
 import { User } from './entities/users.entity';
@@ -32,7 +32,7 @@ export class UsersService {
 
     try {
       savedUser = await this.prisma.user.create({
-        data: createUserDto as CreateUser,
+        data: createUserDto,
       });
     } catch (e) {
       this.logger.error(e.message);
