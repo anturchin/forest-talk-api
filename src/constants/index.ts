@@ -7,6 +7,7 @@ export const ErrorMessages = {
   USER_CREATION_ERROR: 'Ошибка при создании пользователя',
   USER_LIST_ERROR: 'Ошибка при получении списка пользователей',
   USER_DELETION_ERROR: 'Ошибка при удалении пользователя',
+  USER_SERIALIZATION_ERROR: 'Ошибка при сериализации объекта пользователя',
 };
 
 export const DEFAULT_CACHE_TTL = 3600;

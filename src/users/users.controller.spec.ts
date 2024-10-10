@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { User } from './users.entity';
 import { CreateUserDto } from './dto/create-users.dto';
 import { UpdateUserDto } from './dto/update-users.dto';
 
@@ -15,7 +14,7 @@ describe('UsersController', () => {
         password_hash: 'хэш',
         public_key: 'публичный ключ',
         private_key: 'приватный ключ',
-      } as User),
+      }),
       create: jest.fn().mockResolvedValue({
         user_id: 2,
         email: 'lebowski@tbank.com',
@@ -23,7 +22,7 @@ describe('UsersController', () => {
         public_key: 'публичный ключ',
         private_key: 'приватный ключ',
         is_online: false,
-      } as User),
+      }),
       findAll: jest.fn().mockResolvedValue([
         {
           user_id: 1,
@@ -37,12 +36,12 @@ describe('UsersController', () => {
           public_key: 'публичный ключ',
           private_key: 'приватный ключ',
         },
-      ] as User[]),
+      ]),
       remove: jest.fn().mockResolvedValue(undefined),
       update: jest.fn().mockResolvedValue({
         user_id: 1,
         password_hash: 'новый хэш',
-      } as User),
+      }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
