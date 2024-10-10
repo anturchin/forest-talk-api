@@ -6,7 +6,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { isDate, parseISO } from 'date-fns';
-import { User } from '@prisma/client';
 
 import { CreateUserDto } from './dto/create-users.dto';
 import { UpdateUserDto } from './dto/update-users.dto';
@@ -15,6 +14,7 @@ import { RedisService } from '../redis/redis.service';
 import { CreateUser, RedisKeys } from '../interfaces';
 import { PrismaService } from '../prisma/prisma.service';
 import { serializeBigInt } from '../utils/serialize.utils';
+import { User } from './entities/users.entity';
 
 @Injectable()
 export class UsersService {
