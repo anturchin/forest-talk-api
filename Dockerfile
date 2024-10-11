@@ -6,7 +6,7 @@ RUN npm install
 
 COPY . .
 
-COPY .env.production.local .env
+# COPY .env.production.local .env
 
 RUN npm prisma:generate
 
