@@ -13,6 +13,8 @@ export class UsersController {
   @Post()
   @ApiOperation({ summary: 'Создать пользователя' })
   @ApiResponse({ status: 201, description: 'Пользователь успешно создан', type: User })
+  @ApiResponse({ status: 400, description: 'Неверные данные запроса (Bad Request)' })
+  @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
   async create(@Body() createUserDto: CreateUserDto): Promise<User> {
     return await this.userService.create(createUserDto as Required<CreateUserDto>);
   }
@@ -20,6 +22,7 @@ export class UsersController {
   @Get()
   @ApiOperation({ summary: 'Получить всех пользователей' })
   @ApiResponse({ status: 200, description: 'Список пользователей', type: [User] })
+  @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
   async findAll(): Promise<User[]> {
     return await this.userService.findAll();
   }
@@ -27,7 +30,9 @@ export class UsersController {
   @Get(':id')
   @ApiOperation({ summary: 'Получить пользователя по ID' })
   @ApiResponse({ status: 200, description: 'Пользователь найден', type: User })
-  @ApiResponse({ status: 404, description: 'Пользователь не найден' })
+  @ApiResponse({ status: 404, description: 'Пользователь c указанным ID не найден' })
+  @ApiResponse({ status: 400, description: 'Неверный ID пользователя (Bad Request)' })
+  @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
   async findOne(@Param('id') id: string): Promise<User> {
     return await this.userService.findOne(Number(id));
   }
@@ -35,7 +40,12 @@ export class UsersController {
   @Patch(':id')
   @ApiOperation({ summary: 'Обновить пользователя' })
   @ApiResponse({ status: 200, description: 'Пользователь обновлен', type: User })
-  @ApiResponse({ status: 404, description: 'Пользователь не найден' })
+  @ApiResponse({ status: 404, description: 'Пользователь c указанным ID не найден' })
+  @ApiResponse({
+    status: 400,
+    description: 'Неверный ID пользователя или данные для обновления (Bad Request)',
+  })
+  @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<User> {
     return await this.userService.update(Number(id), updateUserDto);
   }
@@ -43,6 +53,9 @@ export class UsersController {
   @Delete(':id')
   @ApiOperation({ summary: 'Удалить пользователя' })
   @ApiResponse({ status: 204, description: 'Пользователь успешно удален.' })
+  @ApiResponse({ status: 404, description: 'Пользователь c указанным ID не найден' })
+  @ApiResponse({ status: 400, description: 'Неверный ID пользователя (Bad Request)' })
+  @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
   async remove(@Param('id') id: string): Promise<void> {
     return await this.userService.remove(Number(id));
   }
