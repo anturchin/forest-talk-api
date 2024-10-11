@@ -14,7 +14,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Создать пользователя' })
   @ApiResponse({ status: 201, description: 'Пользователь успешно создан', type: User })
   async create(@Body() createUserDto: CreateUserDto): Promise<User> {
-    return await this.userService.create(createUserDto);
+    return await this.userService.create(createUserDto as Required<CreateUserDto>);
   }
 
   @Get()

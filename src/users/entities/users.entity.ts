@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class User {
   @ApiProperty({ type: 'number', description: 'Уникальный идентификатор пользователя' })
-  user_id: number;
+  user_id: number | bigint;
 
   @ApiProperty({ type: 'string', description: 'Email пользователя' })
   email: string;

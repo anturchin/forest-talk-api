@@ -25,7 +25,7 @@ export class UsersService {
     private readonly redisService: RedisService
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: Required<CreateUserDto>): Promise<User> {
     await this.checkIfUserExistsByEmail(createUserDto.email);
 
     let savedUser: User;
