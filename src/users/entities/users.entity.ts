@@ -28,7 +28,7 @@ export class User {
     format: 'date-time',
     description: 'Время последнего входа пользователя',
   })
-  last_login: Date;
+  last_login?: Date;
 
   @ApiProperty({
     type: 'string',

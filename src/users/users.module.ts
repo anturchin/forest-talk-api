@@ -12,5 +12,6 @@ import { PrismaService } from '../prisma/prisma.service';
   imports: [RedisModule, PrismaModule],
   providers: [UsersService, RedisRepository, RedisService, PrismaService],
   controllers: [UsersController],
+  exports: [UsersService],
 })
 export class UsersModule {}

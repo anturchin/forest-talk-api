@@ -21,6 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "prisma:generate": "npx prisma generate --schema=./src/prisma/schema.prisma",
     "prisma:migrate": "npx prisma migrate deploy --schema=./src/prisma/schema.prisma",
+    "prisma:dev": "npx prisma migrate dev --schema=./src/prisma/schema.prisma",
     "prisma:rollback": "npx prisma migrate reset --force --schema=./src/prisma/schema.prisma",
     "prisma:status": "npx prisma migrate status --schema=./src/prisma/schema.prisma"
   },
