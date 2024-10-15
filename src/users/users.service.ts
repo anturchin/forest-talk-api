@@ -25,15 +25,15 @@ export class UsersService {
     private readonly redisService: RedisService
   ) {}
 
-  async create(createUserDto: Required<CreateUserDto>): Promise<User> {
+  async create(createUserDto: CreateUserDto): Promise<User> {
     await this.checkIfUserExistsByEmail(createUserDto.email);
 
     let savedUser: User;
 
     try {
-      savedUser = await this.prisma.user.create({
+      savedUser = (await this.prisma.user.create({
         data: createUserDto,
-      });
+      })) as User;
     } catch (e) {
       this.logger.error(e.message);
       throw new ConflictException(ErrorMessages.USER_CREATION_ERROR);
@@ -59,7 +59,7 @@ export class UsersService {
     let users: User[] = [];
 
     try {
-      users = await this.prisma.user.findMany();
+      users = (await this.prisma.user.findMany()) as User[];
     } catch (e) {
       this.logger.error(e.message);
       throw new ConflictException(ErrorMessages.USER_LIST_ERROR);
@@ -88,7 +88,7 @@ export class UsersService {
       this.logger.warn(e.message);
     }
 
-    const user = await this.prisma.user.findUnique({ where: { user_id: id } });
+    const user = (await this.prisma.user.findUnique({ where: { user_id: id } })) as User;
     if (!user) {
       this.logger.warn(ErrorMessages.USER_NOT_FOUND(id));
       throw new NotFoundException(ErrorMessages.USER_NOT_FOUND(id));
@@ -138,7 +138,7 @@ export class UsersService {
       this.logger.warn(e.message);
     }
 
-    const newUser = await this.prisma.user.findUnique({ where: { user_id: id } });
+    const newUser = (await this.prisma.user.findUnique({ where: { user_id: id } })) as User;
     if (!newUser) {
       this.logger.error(ErrorMessages.USER_NOT_FOUND(id));
       throw new NotFoundException(ErrorMessages.USER_NOT_FOUND(id));
@@ -183,13 +183,8 @@ export class UsersService {
       updatedUser.password_hash = updateUserDto.password_hash;
     }
 
-    if (updateUserDto.is_online !== undefined) {
-      if (typeof updateUserDto.is_online === 'boolean') {
-        updatedUser.is_online = updateUserDto.is_online;
-      } else {
-        this.logger.error(ErrorMessages.INVALID_IS_ONLINE);
-        throw new BadRequestException(ErrorMessages.INVALID_IS_ONLINE);
-      }
+    if (updateUserDto.status !== undefined) {
+      updatedUser.status = updateUserDto.status;
     }
 
     return updatedUser;

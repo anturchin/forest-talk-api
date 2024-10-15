@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-users.dto';
+import { CreateUserDto, UserStatus } from './dto/create-users.dto';
 import { UpdateUserDto } from './dto/update-users.dto';
 
 describe('UsersController', () => {
@@ -12,29 +12,21 @@ describe('UsersController', () => {
       findOne: jest.fn().mockResolvedValue({
         user_id: 1,
         password_hash: 'хэш',
-        public_key: 'публичный ключ',
-        private_key: 'приватный ключ',
       }),
       create: jest.fn().mockResolvedValue({
         user_id: 2,
         email: 'lebowski@tbank.com',
         password_hash: 'хэш',
-        public_key: 'публичный ключ',
-        private_key: 'приватный ключ',
-        is_online: false,
+        status: UserStatus.active,
       }),
       findAll: jest.fn().mockResolvedValue([
         {
           user_id: 1,
           password_hash: 'хэш',
-          public_key: 'публичный ключ',
-          private_key: 'приватный ключ',
         },
         {
           user_id: 2,
           password_hash: 'хэш',
-          public_key: 'публичный ключ',
-          private_key: 'приватный ключ',
         },
       ]),
       remove: jest.fn().mockResolvedValue(undefined),
@@ -66,8 +58,6 @@ describe('UsersController', () => {
     expect(result).toEqual({
       user_id: 1,
       password_hash: 'хэш',
-      public_key: 'публичный ключ',
-      private_key: 'приватный ключ',
     });
   });
 
@@ -75,9 +65,7 @@ describe('UsersController', () => {
     const createUserDto: CreateUserDto = {
       email: 'lebowski@tbank.com',
       password_hash: 'хэш',
-      public_key: 'публичный ключ',
-      private_key: 'приватный ключ',
-      is_online: false,
+      status: UserStatus.active,
     };
 
     const result = await controller.create(createUserDto);
@@ -86,9 +74,7 @@ describe('UsersController', () => {
       user_id: 2,
       email: 'lebowski@tbank.com',
       password_hash: 'хэш',
-      public_key: 'публичный ключ',
-      private_key: 'приватный ключ',
-      is_online: false,
+      status: UserStatus.active,
     });
     expect(result.email).toBe('lebowski@tbank.com');
     expect(result.password_hash).toBe('хэш');
@@ -101,14 +87,10 @@ describe('UsersController', () => {
       {
         user_id: 1,
         password_hash: 'хэш',
-        public_key: 'публичный ключ',
-        private_key: 'приватный ключ',
       },
       {
         user_id: 2,
         password_hash: 'хэш',
-        public_key: 'публичный ключ',
-        private_key: 'приватный ключ',
       },
     ]);
     expect(result.length).toBe(2);

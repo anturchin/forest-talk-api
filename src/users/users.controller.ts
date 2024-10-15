@@ -17,7 +17,7 @@ export class UsersController {
   @ApiResponse({ status: 400, description: 'Неверные данные запроса (Bad Request)' })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
   async create(@Body() createUserDto: CreateUserDto): Promise<User> {
-    return await this.userService.create(createUserDto as Required<CreateUserDto>);
+    return await this.userService.create(createUserDto as CreateUserDto);
   }
 
   @Get()

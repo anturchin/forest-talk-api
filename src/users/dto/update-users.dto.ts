@@ -1,8 +1,9 @@
-import { IsEmail, IsOptional, IsBoolean } from 'class-validator';
+import { IsEmail, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { UserStatus } from './create-users.dto';
 
 export class UpdateUserDto {
-  @ApiProperty({ description: 'Email пользователя', example: 'user@mail.ru', required: false })
+  @ApiProperty({ description: 'Email пользователя', example: 'user@mail.ru' })
   @IsOptional()
   @IsEmail()
   email?: string;
@@ -15,12 +16,13 @@ export class UpdateUserDto {
   @IsOptional()
   password_hash?: string;
 
-  @ApiProperty({ description: 'Статус онлайн', example: false, required: false })
+  @ApiProperty({
+    description: 'Статус пользователя',
+  })
   @IsOptional()
-  @IsBoolean()
-  is_online?: boolean;
+  status?: UserStatus;
 
-  @ApiProperty({ description: 'Последний вход', required: false })
+  @ApiProperty({ description: 'Последний вход', type: 'string', format: 'date-time' })
   @IsOptional()
   last_login?: Date;
 }

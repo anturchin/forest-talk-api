@@ -1,4 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional } from 'class-validator';
+import { UserStatus } from '../dto/create-users.dto';
 
 export class User {
   @ApiProperty({ type: 'number', description: 'Уникальный идентификатор пользователя' })
@@ -10,18 +12,11 @@ export class User {
   @ApiProperty({ type: 'string', description: 'Хеш пароля пользователя' })
   password_hash: string;
 
-  @ApiProperty({ type: 'string', description: 'Публичный ключ пользователя' })
-  public_key: string;
-
-  @ApiProperty({ type: 'string', description: 'Приватный ключ пользователя' })
-  private_key: string;
-
   @ApiProperty({
-    type: 'boolean',
-    description: 'Статус пользователя (в сети/не в сети)',
-    default: false,
+    description: 'Статус пользователя',
   })
-  is_online: boolean;
+  @IsOptional()
+  status?: UserStatus;
 
   @ApiProperty({
     type: 'string',

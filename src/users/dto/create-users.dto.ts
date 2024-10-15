@@ -1,5 +1,10 @@
-import { IsBoolean, IsEmail, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+
+export enum UserStatus {
+  active = 'active',
+  deleted = 'deleted',
+}
 
 export class CreateUserDto {
   @ApiProperty({ description: 'Email пользователя', example: 'user@mail.ru' })
@@ -10,19 +15,12 @@ export class CreateUserDto {
   @IsNotEmpty()
   password_hash: string;
 
-  @ApiProperty({ description: 'Публичный ключ', example: 'Публичный ключ пользователя' })
-  @IsNotEmpty()
-  public_key: string;
-
-  @ApiProperty({ description: 'Приватный ключ', example: 'Приватный ключ пользователя' })
-  @IsNotEmpty()
-  private_key: string;
-
-  @ApiProperty({ description: 'Статус онлайн', example: false, required: false })
-  @IsBoolean()
+  @ApiProperty({
+    description: 'Статус пользователя',
+  })
   @IsOptional()
-  is_online?: boolean;
+  status?: UserStatus;
 
-  @ApiProperty({ description: 'Последний вход', required: false })
+  @ApiProperty({ description: 'Последний вход', type: 'string', format: 'date-time' })
   last_login?: Date;
 }
