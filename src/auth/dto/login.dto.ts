@@ -6,7 +6,7 @@ export class LoginDto {
   @IsEmail()
   email: string;
 
-  @ApiProperty({ type: 'string', description: 'Пароль пользователя' })
+  @ApiProperty({ type: 'string', description: 'Хэш пароля пользователя' })
   @IsNotEmpty()
-  password: string;
+  password_hash: string;
 }
