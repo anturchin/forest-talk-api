@@ -8,15 +8,18 @@ export enum UserStatus {
 
 export class CreateUserDto {
   @ApiProperty({ description: 'Email пользователя', example: 'user@mail.ru' })
-  @IsEmail()
+  @IsEmail({}, { message: 'Неверный формат email' })
+  @IsNotEmpty({ message: 'Email не должен быть пустым' })
   email: string;
 
   @ApiProperty({ description: 'Пароль пользователя', example: 'Хеш пароля пользователя' })
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Пароль не должен быть пустым' })
   password_hash: string;
 
   @ApiProperty({
     description: 'Статус пользователя',
+    enum: UserStatus,
+    example: UserStatus.active,
   })
   @IsOptional()
   status?: UserStatus;

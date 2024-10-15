@@ -3,10 +3,11 @@ import { IsEmail, IsNotEmpty } from 'class-validator';
 
 export class LoginDto {
   @ApiProperty({ type: 'string', description: 'Email пользователя' })
-  @IsEmail()
+  @IsEmail({}, { message: 'Неверный формат email' })
+  @IsNotEmpty({ message: 'Email не должен быть пустым' })
   email: string;
 
   @ApiProperty({ type: 'string', description: 'Хэш пароля пользователя' })
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Пароль не должен быть пустым' })
   password_hash: string;
 }

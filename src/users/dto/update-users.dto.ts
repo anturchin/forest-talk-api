@@ -18,6 +18,8 @@ export class UpdateUserDto {
 
   @ApiProperty({
     description: 'Статус пользователя',
+    enum: UserStatus,
+    example: UserStatus.active,
   })
   @IsOptional()
   status?: UserStatus;

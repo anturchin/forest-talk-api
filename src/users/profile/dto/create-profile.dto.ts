@@ -1,37 +1,39 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
-export class RegisterDto {
-  @ApiProperty({ description: 'Email пользователя', example: 'user@mail.ru' })
-  @IsEmail({}, { message: 'Неверный формат email' })
-  @IsNotEmpty({ message: 'Email не должен быть пустым' })
-  email: string;
-
-  @ApiProperty({ description: 'Пароль пользователя', example: 'Хеш пароля пользователя' })
-  @IsNotEmpty({ message: 'Пароль не должен быть пустым' })
-  password_hash: string;
+export class CreateProfileDto {
+  @ApiProperty({ type: 'number', description: 'Уникальный идентификатор пользователя' })
+  @IsNumber()
+  @IsNotEmpty({ message: 'Id не должен быть пустым' })
+  user_id: number | bigint;
 
   @ApiProperty({ type: 'string', description: 'Имя пользователя' })
+  @IsString()
   @IsNotEmpty({ message: 'Имя не должно быть пустым' })
   first_name: string;
 
   @ApiProperty({ type: 'string', description: 'Фамилия пользователя' })
+  @IsString()
   @IsNotEmpty({ message: 'Фамилия не должна быть пустой' })
   last_name: string;
 
   @ApiProperty({ type: 'string', description: 'Отчество пользователя' })
+  @IsString()
   @IsOptional()
   patronymic?: string;
 
   @ApiProperty({ type: 'string', format: 'date-time', description: 'Дата рождения пользователя' })
+  @IsDateString()
   @IsOptional()
   birth_date?: Date;
 
   @ApiProperty({ type: 'string', description: 'Аватар пользователя' })
+  @IsString()
   @IsOptional()
   avatar_url?: string;
 
   @ApiProperty({ type: 'string', description: 'Биография пользователя' })
+  @IsString()
   @IsOptional()
   bio?: string;
 }

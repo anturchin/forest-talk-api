@@ -15,6 +15,7 @@ import { RedisKeys } from '../interfaces';
 import { PrismaService } from '../prisma/prisma.service';
 import { serializeBigInt } from '../utils/serialize.utils';
 import { User } from './entities/users.entity';
+import { ProfileService } from './profile/profile.service';
 
 @Injectable()
 export class UsersService {
@@ -22,11 +23,12 @@ export class UsersService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly redisService: RedisService
+    private readonly redisService: RedisService,
+    private readonly profileService: ProfileService
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    await this.checkIfUserExistsByEmail(createUserDto.email);
+    if (createUserDto.email) await this.checkIfUserExistsByEmail(createUserDto.email);
 
     let savedUser: User;
 
@@ -60,8 +62,7 @@ export class UsersService {
 
     try {
       users = (await this.prisma.user.findMany()) as User[];
-    } catch (e) {
-      this.logger.error(e.message);
+    } catch {
       throw new ConflictException(ErrorMessages.USER_LIST_ERROR);
     }
 
@@ -88,11 +89,9 @@ export class UsersService {
       this.logger.warn(e.message);
     }
 
-    const user = (await this.prisma.user.findUnique({ where: { user_id: id } })) as User;
-    if (!user) {
-      this.logger.warn(ErrorMessages.USER_NOT_FOUND(id));
-      throw new NotFoundException(ErrorMessages.USER_NOT_FOUND(id));
-    }
+    const user = await this.prisma.user.findUnique({ where: { user_id: id } });
+    if (!user) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND(id));
+
     try {
       await this.redisService.saveWithExpiry(
         cachedKey,
@@ -102,10 +101,55 @@ export class UsersService {
     } catch (e) {
       this.logger.warn(e.message);
     }
-    return this.serializeBigInt(user);
+    return this.serializeBigInt(user as User);
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+    await this.updateUser(id, updateUserDto);
+
+    try {
+      await this.redisService.delete(RedisKeys.USER_LIST);
+    } catch (e) {
+      this.logger.warn(e.message);
+    }
+
+    const newUser = (await this.prisma.user.findUnique({ where: { user_id: id } })) as User;
+    if (!newUser) {
+      this.logger.error(ErrorMessages.USER_NOT_FOUND(id));
+      throw new NotFoundException(ErrorMessages.USER_NOT_FOUND(id));
+    }
+
+    return this.serializeBigInt(newUser);
+  }
+
+  async remove(id: number): Promise<void> {
+    if (typeof id !== 'number' || isNaN(id) || id <= 0) {
+      throw new BadRequestException(ErrorMessages.INVALID_USER_ID);
+    }
+    const cachedKey = `${RedisKeys.USER_KEY_PREFIX}${id}`;
+    await this.findOne(id);
+
+    try {
+      await this.profileService.delete(id);
+    } catch {
+      throw new ConflictException(ErrorMessages.PROFILE_DELETION_ERROR);
+    }
+
+    try {
+      await this.prisma.user.delete({ where: { user_id: id } });
+    } catch {
+      throw new ConflictException(ErrorMessages.USER_DELETION_ERROR);
+    }
+
+    try {
+      await this.redisService.delete(cachedKey);
+      await this.redisService.delete(RedisKeys.USER_LIST);
+    } catch (e) {
+      this.logger.warn(e.message);
+    }
+  }
+
+  private async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<void> {
     const user = await this.prisma.user.findUnique({ where: { user_id: id } });
     if (!user) {
       this.logger.error(ErrorMessages.USER_NOT_FOUND(id));
@@ -131,43 +175,12 @@ export class UsersService {
       where: { user_id: id },
       data: updatedUser,
     });
-
-    try {
-      await this.redisService.delete(RedisKeys.USER_LIST);
-    } catch (e) {
-      this.logger.warn(e.message);
-    }
-
-    const newUser = (await this.prisma.user.findUnique({ where: { user_id: id } })) as User;
-    if (!newUser) {
-      this.logger.error(ErrorMessages.USER_NOT_FOUND(id));
-      throw new NotFoundException(ErrorMessages.USER_NOT_FOUND(id));
-    }
-
-    return this.serializeBigInt(newUser);
-  }
-
-  async remove(id: number): Promise<void> {
-    await this.findOne(id);
-    try {
-      await this.prisma.user.delete({ where: { user_id: id } });
-    } catch (e) {
-      this.logger.error(e.message);
-      throw new ConflictException(ErrorMessages.USER_DELETION_ERROR);
-    }
-
-    try {
-      await this.redisService.delete(RedisKeys.USER_LIST);
-    } catch (e) {
-      this.logger.warn(e.message);
-    }
   }
 
   private serializeBigInt(user: User): User {
     try {
       return JSON.parse(JSON.stringify(user, serializeBigInt)) as User;
-    } catch (e) {
-      this.logger.error(e.message);
+    } catch {
       throw new BadRequestException(ErrorMessages.USER_SERIALIZATION_ERROR);
     }
   }
@@ -191,10 +204,7 @@ export class UsersService {
   }
 
   private async checkIfUserExistsByEmail(email: string): Promise<void> {
-    const existingUser = await this.prisma.user.findUnique({ where: { email } });
-    if (existingUser) {
-      this.logger.error(ErrorMessages.EMAIL_ALREADY_EXISTS);
-      throw new ConflictException(ErrorMessages.EMAIL_ALREADY_EXISTS);
-    }
+    const userExists = await this.prisma.user.findUnique({ where: { email } });
+    if (userExists) throw new ConflictException(ErrorMessages.EMAIL_ALREADY_EXISTS);
   }
 }
