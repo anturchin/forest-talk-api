@@ -20,6 +20,7 @@ export class CreateUserDto {
     description: 'Статус пользователя',
     enum: UserStatus,
     example: UserStatus.active,
+    required: false,
   })
   @IsOptional()
   status?: UserStatus;
@@ -27,6 +28,7 @@ export class CreateUserDto {
   @ApiProperty({
     description: 'Время последнего входа в формате ISO с точностью до миллисекунд',
     example: '2024-10-16T14:30:45.123Z',
+    required: false,
   })
   @IsOptional()
   @IsDateString({}, { message: 'Неверный формат даты. Ожидается ISO формат с миллисекундами.' })

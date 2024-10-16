@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { UserStatus } from './create-users.dto';
 
 export class UpdateUserDto {
-  @ApiProperty({ description: 'Email пользователя', example: 'user@mail.ru' })
+  @ApiProperty({ description: 'Email пользователя', example: 'user@mail.ru', required: false })
   @IsOptional()
   @IsEmail({}, { message: 'Неверный формат email' })
   email?: string;
@@ -20,6 +20,7 @@ export class UpdateUserDto {
     description: 'Статус пользователя',
     enum: UserStatus,
     example: UserStatus.active,
+    required: false,
   })
   @IsOptional()
   status?: UserStatus;
@@ -27,6 +28,7 @@ export class UpdateUserDto {
   @ApiProperty({
     description: 'Время последнего входа в формате ISO с точностью до миллисекунд',
     example: '2024-10-16T14:30:45.123Z',
+    required: false,
   })
   @IsOptional()
   @IsDateString({}, { message: 'Неверный формат даты. Ожидается ISO формат с миллисекундами.' })

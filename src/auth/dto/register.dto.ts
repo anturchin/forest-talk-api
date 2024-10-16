@@ -19,19 +19,24 @@ export class RegisterDto {
   @IsNotEmpty({ message: 'Фамилия не должна быть пустой' })
   last_name: string;
 
-  @ApiProperty({ type: 'string', description: 'Отчество пользователя' })
+  @ApiProperty({ type: 'string', description: 'Отчество пользователя', required: false })
   @IsOptional()
   patronymic?: string;
 
-  @ApiProperty({ type: 'string', format: 'date-time', description: 'Дата рождения пользователя' })
+  @ApiProperty({
+    type: 'string',
+    format: 'date-time',
+    description: 'Дата рождения пользователя',
+    required: false,
+  })
   @IsOptional()
   birth_date?: Date;
 
-  @ApiProperty({ type: 'string', description: 'Аватар пользователя' })
+  @ApiProperty({ type: 'string', description: 'Аватар пользователя', required: false })
   @IsOptional()
   avatar_url?: string;
 
-  @ApiProperty({ type: 'string', description: 'Биография пользователя' })
+  @ApiProperty({ type: 'string', description: 'Биография пользователя', required: false })
   @IsOptional()
   bio?: string;
 }
