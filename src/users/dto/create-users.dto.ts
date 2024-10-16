@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsDateString, IsEmail, IsNotEmpty, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export enum UserStatus {
@@ -24,6 +24,11 @@ export class CreateUserDto {
   @IsOptional()
   status?: UserStatus;
 
-  @ApiProperty({ description: 'Последний вход', type: 'string', format: 'date-time' })
+  @ApiProperty({
+    description: 'Время последнего входа в формате ISO с точностью до миллисекунд',
+    example: '2024-10-16T14:30:45.123Z',
+  })
+  @IsOptional()
+  @IsDateString({}, { message: 'Неверный формат даты. Ожидается ISO формат с миллисекундами.' })
   last_login?: Date;
 }

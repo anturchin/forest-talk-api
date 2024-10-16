@@ -5,15 +5,14 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { isDate, parseISO } from 'date-fns';
 
-import { CreateUserDto } from './dto/create-users.dto';
+import { CreateUserDto, UserStatus } from './dto/create-users.dto';
 import { UpdateUserDto } from './dto/update-users.dto';
-import { DEFAULT_CACHE_TTL, ErrorMessages } from '../constants';
+import { DEFAULT_CACHE_TTL, ErrorMessages } from '../common/constants';
 import { RedisService } from '../redis/redis.service';
-import { RedisKeys } from '../interfaces';
+import { RedisKeys } from '../common/interfaces';
 import { PrismaService } from '../prisma/prisma.service';
-import { serializeBigInt } from '../utils/serialize.utils';
+import { serializeBigInt } from '../common/utils/serialize.utils';
 import { User } from './entities/users.entity';
 import { ProfileService } from './profile/profile.service';
 
@@ -28,7 +27,7 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    if (createUserDto.email) await this.checkIfUserExistsByEmail(createUserDto.email);
+    await this.checkIfUserExistsByEmail(createUserDto.email);
 
     let savedUser: User;
 
@@ -105,9 +104,11 @@ export class UsersService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+    const cachedKey = `${RedisKeys.USER_KEY_PREFIX}${id}`;
     await this.updateUser(id, updateUserDto);
 
     try {
+      await this.redisService.delete(cachedKey);
       await this.redisService.delete(RedisKeys.USER_LIST);
     } catch (e) {
       this.logger.warn(e.message);
@@ -123,9 +124,6 @@ export class UsersService {
   }
 
   async remove(id: number): Promise<void> {
-    if (typeof id !== 'number' || isNaN(id) || id <= 0) {
-      throw new BadRequestException(ErrorMessages.INVALID_USER_ID);
-    }
     const cachedKey = `${RedisKeys.USER_KEY_PREFIX}${id}`;
     await this.findOne(id);
 
@@ -160,21 +158,17 @@ export class UsersService {
       await this.checkIfUserExistsByEmail(updateUserDto.email);
     }
 
-    const updatedUser = this.constructUpdatedUser(updateUserDto);
-
-    if (updateUserDto.last_login) {
-      const parsedDate = parseISO(updateUserDto.last_login as unknown as string);
-      if (!isDate(parsedDate) || isNaN(parsedDate.getTime())) {
-        this.logger.error(ErrorMessages.INVALID_LAST_LOGIN);
-        throw new BadRequestException(ErrorMessages.INVALID_LAST_LOGIN);
-      }
-      updatedUser.last_login = updateUserDto.last_login;
+    const { status, ...updateUser } = updateUserDto;
+    const statIsValid = status === UserStatus.active || status === UserStatus.deleted;
+    try {
+      await this.prisma.user.update({
+        where: { user_id: id },
+        data: statIsValid ? updateUserDto : updateUser,
+      });
+    } catch (e) {
+      this.logger.error(e.message);
+      throw new BadRequestException(ErrorMessages.USER_UPDATING_ERROR);
     }
-
-    await this.prisma.user.update({
-      where: { user_id: id },
-      data: updatedUser,
-    });
   }
 
   private serializeBigInt(user: User): User {
@@ -183,24 +177,6 @@ export class UsersService {
     } catch {
       throw new BadRequestException(ErrorMessages.USER_SERIALIZATION_ERROR);
     }
-  }
-
-  private constructUpdatedUser(updateUserDto: UpdateUserDto): Partial<User> {
-    const updatedUser: Partial<User> = {};
-
-    if (updateUserDto.email) {
-      updatedUser.email = updateUserDto.email;
-    }
-
-    if (updateUserDto.password_hash) {
-      updatedUser.password_hash = updateUserDto.password_hash;
-    }
-
-    if (updateUserDto.status !== undefined) {
-      updatedUser.status = updateUserDto.status;
-    }
-
-    return updatedUser;
   }
 
   private async checkIfUserExistsByEmail(email: string): Promise<void> {

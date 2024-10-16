@@ -5,6 +5,7 @@ import { CreateUserDto } from './dto/create-users.dto';
 import { UpdateUserDto } from './dto/update-users.dto';
 import { UsersService } from './users.service';
 import { User } from './entities/users.entity';
+import { ParseIntPipe } from '../common/pipes/parse-int.pipe';
 
 @ApiTags('users')
 @Controller('users')
@@ -34,8 +35,8 @@ export class UsersController {
   @ApiResponse({ status: 404, description: 'Пользователь c указанным ID не найден' })
   @ApiResponse({ status: 400, description: 'Неверный ID пользователя (Bad Request)' })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
-  async findOne(@Param('id') id: string): Promise<User> {
-    return await this.userService.findOne(Number(id));
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<User> {
+    return await this.userService.findOne(id);
   }
 
   @Patch(':id')
@@ -47,8 +48,11 @@ export class UsersController {
     description: 'Неверный ID пользователя или данные для обновления (Bad Request)',
   })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<User> {
-    return await this.userService.update(Number(id), updateUserDto);
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserDto: UpdateUserDto
+  ): Promise<User> {
+    return await this.userService.update(id, updateUserDto);
   }
 
   @Delete(':id')
@@ -57,7 +61,7 @@ export class UsersController {
   @ApiResponse({ status: 404, description: 'Пользователь c указанным ID не найден' })
   @ApiResponse({ status: 400, description: 'Неверный ID пользователя (Bad Request)' })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
-  async remove(@Param('id') id: string): Promise<void> {
-    return await this.userService.remove(Number(id));
+  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return await this.userService.remove(id);
   }
 }

@@ -5,6 +5,7 @@ export const ErrorMessages = {
   INVALID_IS_ONLINE: 'Некорректный формат для поля is_online, должно быть булево',
   EMAIL_ALREADY_EXISTS: 'Пользователь с таким email уже существует',
   USER_CREATION_ERROR: 'Ошибка при создании пользователя',
+  USER_UPDATING_ERROR: 'Ошибка при обновлении пользователя',
   PROFILE_CREATION_ERROR: 'Ошибка при создании профиля',
   USER_LIST_ERROR: 'Ошибка при получении списка пользователей',
   USER_DELETION_ERROR: 'Ошибка при удалении пользователя',

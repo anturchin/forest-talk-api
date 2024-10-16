@@ -4,7 +4,7 @@ import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { LoginDto } from './dto/login.dto';
 import { UsersService } from '../users/users.service';
-import { ErrorMessages, SuccessMessages } from '../constants';
+import { ErrorMessages, SuccessMessages } from '../common/constants';
 import { ProfileService } from '../users/profile/profile.service';
 
 @Injectable()
