@@ -54,7 +54,7 @@ describe('UsersController', () => {
   });
 
   it('должен вернуть пользователя по запросу GET api/users/:id', async () => {
-    const result = await controller.findOne('1');
+    const result = await controller.findOne(1);
     expect(result).toEqual({
       user_id: 1,
       password_hash: 'хэш',
@@ -97,7 +97,7 @@ describe('UsersController', () => {
   });
 
   it('должен удалить пользователя через DELETE api/users/:id', async () => {
-    const result = await controller.remove('1');
+    const result = await controller.remove(1);
 
     expect(result).toBeUndefined();
   });
@@ -107,7 +107,7 @@ describe('UsersController', () => {
       password_hash: 'новый хэш',
     };
 
-    const result = await controller.update('1', updateUserDto);
+    const result = await controller.update(1, updateUserDto);
 
     expect(result).toEqual({
       user_id: 1,
