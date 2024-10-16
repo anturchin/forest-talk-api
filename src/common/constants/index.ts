@@ -4,6 +4,7 @@ export const ErrorMessages = {
   INVALID_LAST_LOGIN: 'Некорректный формат даты для поля last_login',
   INVALID_IS_ONLINE: 'Некорректный формат для поля is_online, должно быть булево',
   EMAIL_ALREADY_EXISTS: 'Пользователь с таким email уже существует',
+  USER_NOT_FOUND_BY_EMAIL: (email: string) => `Пользователь с таким email ${email} не существует`,
   USER_CREATION_ERROR: 'Ошибка при создании пользователя',
   USER_UPDATING_ERROR: 'Ошибка при обновлении пользователя',
   PROFILE_CREATION_ERROR: 'Ошибка при создании профиля',

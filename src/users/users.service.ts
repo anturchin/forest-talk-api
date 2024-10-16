@@ -147,6 +147,12 @@ export class UsersService {
     }
   }
 
+  async findByEmail(email: string): Promise<User> {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND_BY_EMAIL(email));
+    return this.serializeBigInt(user as User);
+  }
+
   private async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<void> {
     const user = await this.prisma.user.findUnique({ where: { user_id: id } });
     if (!user) {
