@@ -19,3 +19,4 @@ export const SuccessMessages = {
 };
 
 export const DEFAULT_CACHE_TTL = 3600;
+export const SEVEN_DAYS_IN_SECONDS = 604800;
