@@ -1,5 +1,5 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
@@ -36,6 +36,7 @@ export class AuthController {
   @UseGuards(RefreshAuthGuard)
   @Post('refresh')
   @ApiOperation({ summary: 'Обновить токен пользователя' })
+  @ApiHeader({ name: 'Bearer', required: true, description: 'Refresh token' })
   @ApiResponse({ status: 200, type: RefreshResponseDto })
   @ApiResponse({ status: 400, description: 'Неверные данные запроса (Bad Request)' })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
@@ -46,6 +47,7 @@ export class AuthController {
   @UseGuards(RefreshAuthGuard)
   @Post('logout')
   @ApiOperation({ summary: 'Выход' })
+  @ApiHeader({ name: 'Bearer', required: true, description: 'Refresh token' })
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 400, description: 'Неверные данные запроса (Bad Request)' })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })

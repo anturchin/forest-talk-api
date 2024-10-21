@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { CreateUserDto } from './dto/create-users.dto';
 import { UpdateUserDto } from './dto/update-users.dto';
@@ -16,6 +16,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Post()
   @ApiOperation({ summary: 'Создать пользователя' })
+  @ApiHeader({ name: 'Bearer', required: true, description: 'Access token' })
   @ApiResponse({ status: 201, description: 'Пользователь успешно создан', type: User })
   @ApiResponse({ status: 400, description: 'Неверные данные запроса (Bad Request)' })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
@@ -26,6 +27,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Get()
   @ApiOperation({ summary: 'Получить всех пользователей' })
+  @ApiHeader({ name: 'Bearer', required: true, description: 'Access token' })
   @ApiResponse({ status: 200, description: 'Список пользователей', type: [User] })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
   async findAll(): Promise<User[]> {
@@ -35,6 +37,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   @ApiOperation({ summary: 'Получить пользователя по ID' })
+  @ApiHeader({ name: 'Bearer', required: true, description: 'Access token' })
   @ApiResponse({ status: 200, description: 'Пользователь найден', type: User })
   @ApiResponse({ status: 404, description: 'Пользователь c указанным ID не найден' })
   @ApiResponse({ status: 400, description: 'Неверный ID пользователя (Bad Request)' })
@@ -46,6 +49,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   @ApiOperation({ summary: 'Обновить пользователя' })
+  @ApiHeader({ name: 'Bearer', required: true, description: 'Access token' })
   @ApiResponse({ status: 200, description: 'Пользователь обновлен', type: User })
   @ApiResponse({ status: 404, description: 'Пользователь c указанным ID не найден' })
   @ApiResponse({
@@ -63,6 +67,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'Удалить пользователя' })
+  @ApiHeader({ name: 'Bearer', required: true, description: 'Access token' })
   @ApiResponse({ status: 204 })
   @ApiResponse({ status: 404, description: 'Пользователь c указанным ID не найден' })
   @ApiResponse({ status: 400, description: 'Неверный ID пользователя (Bad Request)' })
