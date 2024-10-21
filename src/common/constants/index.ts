@@ -12,6 +12,10 @@ export const ErrorMessages = {
   USER_DELETION_ERROR: 'Ошибка при удалении пользователя',
   PROFILE_DELETION_ERROR: 'Ошибка при удалении профиля пользователя',
   USER_SERIALIZATION_ERROR: 'Ошибка при сериализации объекта пользователя',
+  INVALID_REFRESH_TOKEN: 'Невалидный refresh token',
+  INVALID_PASSWORD_OR_EMAIL: 'Неверный email или пароль',
+  INVALID_VALIDATE_USER: 'Пользователь не найден',
+  INTERNAL_SERVER_ERROR: 'Внутренняя ошибка сервера: Redis недоступен',
 };
 
 export const SuccessMessages = {
@@ -19,4 +23,4 @@ export const SuccessMessages = {
 };
 
 export const DEFAULT_CACHE_TTL = 3600;
-export const SEVEN_DAYS_IN_SECONDS = 604800;
+export const ONE_DAY_IN_SECONDS = 86400;

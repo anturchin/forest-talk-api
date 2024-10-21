@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { RedisRepository } from './redis.repository';
 import { RedisKeys } from '../common/interfaces';
+import { ErrorMessages } from '../common/constants';
 
 @Injectable()
 export class RedisService {
@@ -15,14 +16,27 @@ export class RedisService {
   }
 
   async get(key: RedisKeys | string): Promise<string | null> {
-    return this.redisRepository.get(key);
+    try {
+      const val = await this.redisRepository.get(key);
+      return val;
+    } catch {
+      throw new InternalServerErrorException(ErrorMessages.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async set(key: RedisKeys | string, value: string): Promise<void> {
-    await this.redisRepository.set(key, value);
+    try {
+      await this.redisRepository.set(key, value);
+    } catch {
+      throw new InternalServerErrorException(ErrorMessages.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async delete(key: RedisKeys | string): Promise<void> {
-    await this.redisRepository.delete(key);
+    try {
+      await this.redisRepository.delete(key);
+    } catch {
+      throw new InternalServerErrorException(ErrorMessages.INTERNAL_SERVER_ERROR);
+    }
   }
 }

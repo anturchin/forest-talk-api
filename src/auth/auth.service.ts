@@ -1,4 +1,10 @@
-import { ConflictException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
@@ -6,7 +12,7 @@ import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { LoginDto } from './dto/login.dto';
 import { UsersService } from '../users/users.service';
-import { ErrorMessages, SEVEN_DAYS_IN_SECONDS, SuccessMessages } from '../common/constants';
+import { ErrorMessages, ONE_DAY_IN_SECONDS, SuccessMessages } from '../common/constants';
 import { ProfileService } from '../users/profile/profile.service';
 import { JwtPayload, RefreshToken } from '../common/interfaces';
 import { User } from '../users/entities/users.entity';
@@ -51,13 +57,13 @@ export class AuthService {
     const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '15m' });
     const refreshToken = await this.jwtService.signAsync(payload, {
       secret: this.configService.get('JWT_REFRESH_SECRET'),
-      expiresIn: '7d',
+      expiresIn: '1d',
     });
 
     await this.saveRefreshTokenToRedis({
       id: user.user_id,
       refreshToken,
-      expires: SEVEN_DAYS_IN_SECONDS,
+      expires: ONE_DAY_IN_SECONDS,
     });
 
     return { accessToken, refreshToken };
@@ -80,35 +86,19 @@ export class AuthService {
 
       const storedToken = await this.redisService.get(`refresh_token:${payload.sub}`);
       if (!storedToken || storedToken !== refresh_token) {
-        throw new UnauthorizedException('Невалидный refresh token');
+        throw new UnauthorizedException(ErrorMessages.INVALID_REFRESH_TOKEN);
       }
-    } catch {
-      throw new UnauthorizedException('Невалидный refresh token');
+    } catch (e) {
+      if (e instanceof InternalServerErrorException) {
+        throw new InternalServerErrorException(e.message);
+      }
+      throw new UnauthorizedException(e.message);
     }
 
-    const user = await this.findUser(payload);
-
-    const accessSecret = this.configService.get<string>('JWT_ACCESS_SECRET');
-
-    const accessToken = await this.jwtService.signAsync(
-      { sub: user.user_id, email: user.email },
-      { secret: accessSecret, expiresIn: '15m' }
+    const { accessToken, newRefreshToken } = await this.generateNewRefreshToken(
+      payload,
+      refreshSecret
     );
-
-    const newRefreshToken = await this.jwtService.signAsync(
-      { sub: user.user_id, email: user.email },
-      {
-        secret: refreshSecret,
-        expiresIn: '7d',
-      }
-    );
-
-    await this.saveRefreshTokenToRedis({
-      id: user.user_id,
-      refreshToken: newRefreshToken,
-      expires: SEVEN_DAYS_IN_SECONDS,
-    });
-
     return { accessToken, newRefreshToken };
   }
 
@@ -122,17 +112,49 @@ export class AuthService {
       });
 
       await this.redisService.delete(`refresh_token:${payload.sub}`);
-      this.logger.log(`Refresh token deleted for user ${payload.sub}`);
+      this.logger.log(`У пользователя с id ${payload.sub} удален refresh token`);
     } catch (e) {
-      this.logger.warn(`Failed to delete refresh token: ${e.message}`);
-      throw new UnauthorizedException('Ошибка при выходе');
+      if (e instanceof InternalServerErrorException) {
+        this.logger.warn(`Ошибка при удалении refresh token: ${e.message}`);
+        throw new InternalServerErrorException(e.message);
+      }
     }
   }
 
   async findUser(payload: JwtPayload): Promise<User> {
     const user = await this.userService.findOne(payload.sub);
-    if (!user) throw new UnauthorizedException('Пользователь не найден');
+    if (!user) throw new UnauthorizedException(ErrorMessages.USER_NOT_FOUND(payload.sub));
     return user;
+  }
+
+  private async generateNewRefreshToken(
+    payload: JwtPayload,
+    refreshSecret: string
+  ): Promise<{ accessToken: string; newRefreshToken: string }> {
+    const user = await this.findUser(payload);
+
+    const accessSecret = this.configService.get<string>('JWT_ACCESS_SECRET');
+
+    const accessToken = await this.jwtService.signAsync(
+      { sub: user.user_id, email: user.email },
+      { secret: accessSecret, expiresIn: '15m' }
+    );
+
+    const newRefreshToken = await this.jwtService.signAsync(
+      { sub: user.user_id, email: user.email },
+      {
+        secret: refreshSecret,
+        expiresIn: '1d',
+      }
+    );
+
+    await this.saveRefreshTokenToRedis({
+      id: user.user_id,
+      refreshToken: newRefreshToken,
+      expires: ONE_DAY_IN_SECONDS,
+    });
+
+    return { accessToken, newRefreshToken };
   }
 
   private async validateUser({ email, password_hash }: LoginDto): Promise<User> {
@@ -140,11 +162,13 @@ export class AuthService {
       const user = await this.userService.findByEmail(email);
 
       if (user && user.password_hash !== password_hash) {
-        throw new UnauthorizedException('Неверный email или пароль');
+        throw new UnauthorizedException(ErrorMessages.INVALID_PASSWORD_OR_EMAIL);
       }
       return user;
-    } catch {
-      throw new UnauthorizedException('Пользователь не найден');
+    } catch (e) {
+      if (e instanceof UnauthorizedException) {
+        throw new UnauthorizedException(e.message);
+      }
     }
   }
 
@@ -156,7 +180,10 @@ export class AuthService {
     try {
       await this.redisService.saveWithExpiry(`refresh_token:${id}`, refreshToken, expires);
     } catch (e) {
-      this.logger.warn(`Cache error: ${e.message}`);
+      if (e instanceof InternalServerErrorException) {
+        this.logger.warn(`Cache error: ${e.message}`);
+        throw new InternalServerErrorException(e.message);
+      }
     }
   }
 }
