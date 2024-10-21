@@ -1,10 +1,11 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
 import { RefreshResponseDto, RefreshTokenDto } from './dto/refresh-token.dto';
 import { AuthService } from './auth.service';
+import { RefreshAuthGuard } from '../common/guards/refresh-auth.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -32,6 +33,7 @@ export class AuthController {
     return await this.authService.login(loginDto);
   }
 
+  @UseGuards(RefreshAuthGuard)
   @Post('refresh')
   @ApiOperation({ summary: 'Обновить токен пользователя' })
   @ApiResponse({ status: 200, type: RefreshResponseDto })
@@ -41,6 +43,7 @@ export class AuthController {
     return await this.authService.refresh(refreshTokenDto);
   }
 
+  @UseGuards(RefreshAuthGuard)
   @Post('logout')
   @ApiOperation({ summary: 'Выход' })
   @ApiResponse({ status: 200 })

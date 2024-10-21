@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { CreateUserDto } from './dto/create-users.dto';
@@ -6,12 +6,14 @@ import { UpdateUserDto } from './dto/update-users.dto';
 import { UsersService } from './users.service';
 import { User } from './entities/users.entity';
 import { ParseIntPipe } from '../common/pipes/parse-int.pipe';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   @ApiOperation({ summary: 'Создать пользователя' })
   @ApiResponse({ status: 201, description: 'Пользователь успешно создан', type: User })
@@ -21,6 +23,7 @@ export class UsersController {
     return await this.userService.create(createUserDto as CreateUserDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   @ApiOperation({ summary: 'Получить всех пользователей' })
   @ApiResponse({ status: 200, description: 'Список пользователей', type: [User] })
@@ -29,6 +32,7 @@ export class UsersController {
     return await this.userService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   @ApiOperation({ summary: 'Получить пользователя по ID' })
   @ApiResponse({ status: 200, description: 'Пользователь найден', type: User })
@@ -39,6 +43,7 @@ export class UsersController {
     return await this.userService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   @ApiOperation({ summary: 'Обновить пользователя' })
   @ApiResponse({ status: 200, description: 'Пользователь обновлен', type: User })
@@ -55,6 +60,7 @@ export class UsersController {
     return await this.userService.update(id, updateUserDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'Удалить пользователя' })
   @ApiResponse({ status: 204 })
