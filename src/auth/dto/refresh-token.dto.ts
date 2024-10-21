@@ -11,5 +11,5 @@ export class RefreshResponseDto {
   @ApiProperty({ type: 'string' })
   accessToken: string;
   @ApiProperty({ type: 'string' })
-  refreshToken: string;
+  newRefreshToken: string;
 }
