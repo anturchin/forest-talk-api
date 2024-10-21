@@ -12,6 +12,7 @@ export const ErrorMessages = {
   USER_DELETION_ERROR: 'Ошибка при удалении пользователя',
   PROFILE_DELETION_ERROR: 'Ошибка при удалении профиля пользователя',
   USER_SERIALIZATION_ERROR: 'Ошибка при сериализации объекта пользователя',
+  PROFILE_SERIALIZATION_ERROR: 'Ошибка при сериализации объекта профиль',
   INVALID_REFRESH_TOKEN: 'Невалидный refresh token',
   INVALID_PASSWORD_OR_EMAIL: 'Неверный email или пароль',
   INVALID_VALIDATE_USER: 'Пользователь не найден',

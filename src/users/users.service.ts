@@ -12,7 +12,7 @@ import { DEFAULT_CACHE_TTL, ErrorMessages } from '../common/constants';
 import { RedisService } from '../redis/redis.service';
 import { RedisKeys } from '../common/interfaces';
 import { PrismaService } from '../prisma/prisma.service';
-import { serializeBigInt } from '../common/utils/serialize.utils';
+import { serializeBigInt, serializeObjBigInt } from '../common/utils/serialize.utils';
 import { User } from './entities/users.entity';
 import { ProfileService } from './profile/profile.service';
 
@@ -46,7 +46,7 @@ export class UsersService {
       this.logger.warn(`Cache error: ${e.message}`);
     }
 
-    return this.serializeBigInt(savedUser);
+    return serializeObjBigInt(savedUser, ErrorMessages.USER_SERIALIZATION_ERROR);
   }
 
   async findAll(): Promise<User[]> {
@@ -74,7 +74,7 @@ export class UsersService {
     } catch (e) {
       this.logger.warn(e.message);
     }
-    return users.map(this.serializeBigInt);
+    return users.map((user) => serializeObjBigInt(user, ErrorMessages.USER_SERIALIZATION_ERROR));
   }
 
   async findOne(id: number): Promise<User> {
@@ -100,7 +100,7 @@ export class UsersService {
     } catch (e) {
       this.logger.warn(e.message);
     }
-    return this.serializeBigInt(user as User);
+    return serializeObjBigInt(user as User, ErrorMessages.USER_SERIALIZATION_ERROR);
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
@@ -120,7 +120,7 @@ export class UsersService {
       throw new NotFoundException(ErrorMessages.USER_NOT_FOUND(id));
     }
 
-    return this.serializeBigInt(newUser);
+    return serializeObjBigInt(newUser, ErrorMessages.USER_SERIALIZATION_ERROR);
   }
 
   async remove(id: number): Promise<void> {
@@ -150,7 +150,7 @@ export class UsersService {
   async findByEmail(email: string): Promise<User> {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND_BY_EMAIL(email));
-    return this.serializeBigInt(user as User);
+    return serializeObjBigInt(user as User, ErrorMessages.USER_SERIALIZATION_ERROR);
   }
 
   private async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<void> {
@@ -174,14 +174,6 @@ export class UsersService {
     } catch (e) {
       this.logger.error(e.message);
       throw new BadRequestException(ErrorMessages.USER_UPDATING_ERROR);
-    }
-  }
-
-  private serializeBigInt(user: User): User {
-    try {
-      return JSON.parse(JSON.stringify(user, serializeBigInt)) as User;
-    } catch {
-      throw new BadRequestException(ErrorMessages.USER_SERIALIZATION_ERROR);
     }
   }
 
