@@ -1,10 +1,11 @@
-import { IsEmail, IsOptional, IsBoolean } from 'class-validator';
+import { IsDateString, IsEmail, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { UserStatus } from './create-users.dto';
 
 export class UpdateUserDto {
   @ApiProperty({ description: 'Email пользователя', example: 'user@mail.ru', required: false })
   @IsOptional()
-  @IsEmail()
+  @IsEmail({}, { message: 'Неверный формат email' })
   email?: string;
 
   @ApiProperty({
@@ -15,12 +16,21 @@ export class UpdateUserDto {
   @IsOptional()
   password_hash?: string;
 
-  @ApiProperty({ description: 'Статус онлайн', example: false, required: false })
+  @ApiProperty({
+    description: 'Статус пользователя',
+    enum: UserStatus,
+    example: UserStatus.active,
+    required: false,
+  })
   @IsOptional()
-  @IsBoolean()
-  is_online?: boolean;
+  status?: UserStatus;
 
-  @ApiProperty({ description: 'Последний вход', required: false })
+  @ApiProperty({
+    description: 'Время последнего входа в формате ISO с точностью до миллисекунд',
+    example: '2024-10-16T14:30:45.123Z',
+    required: false,
+  })
   @IsOptional()
+  @IsDateString({}, { message: 'Неверный формат даты. Ожидается ISO формат с миллисекундами.' })
   last_login?: Date;
 }

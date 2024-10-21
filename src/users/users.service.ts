@@ -5,16 +5,16 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { isDate, parseISO } from 'date-fns';
 
-import { CreateUserDto } from './dto/create-users.dto';
+import { CreateUserDto, UserStatus } from './dto/create-users.dto';
 import { UpdateUserDto } from './dto/update-users.dto';
-import { DEFAULT_CACHE_TTL, ErrorMessages } from '../constants';
+import { DEFAULT_CACHE_TTL, ErrorMessages } from '../common/constants';
 import { RedisService } from '../redis/redis.service';
-import { RedisKeys } from '../interfaces';
+import { RedisKeys } from '../common/interfaces';
 import { PrismaService } from '../prisma/prisma.service';
-import { serializeBigInt } from '../utils/serialize.utils';
+import { serializeBigInt, serializeObjBigInt } from '../common/utils/serialize.utils';
 import { User } from './entities/users.entity';
+import { ProfileService } from './profile/profile.service';
 
 @Injectable()
 export class UsersService {
@@ -22,18 +22,19 @@ export class UsersService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly redisService: RedisService
+    private readonly redisService: RedisService,
+    private readonly profileService: ProfileService
   ) {}
 
-  async create(createUserDto: Required<CreateUserDto>): Promise<User> {
+  async create(createUserDto: CreateUserDto): Promise<User> {
     await this.checkIfUserExistsByEmail(createUserDto.email);
 
     let savedUser: User;
 
     try {
-      savedUser = await this.prisma.user.create({
+      savedUser = (await this.prisma.user.create({
         data: createUserDto,
-      });
+      })) as User;
     } catch (e) {
       this.logger.error(e.message);
       throw new ConflictException(ErrorMessages.USER_CREATION_ERROR);
@@ -45,7 +46,7 @@ export class UsersService {
       this.logger.warn(`Cache error: ${e.message}`);
     }
 
-    return this.serializeBigInt(savedUser);
+    return serializeObjBigInt(savedUser, ErrorMessages.USER_SERIALIZATION_ERROR);
   }
 
   async findAll(): Promise<User[]> {
@@ -59,9 +60,8 @@ export class UsersService {
     let users: User[] = [];
 
     try {
-      users = await this.prisma.user.findMany();
-    } catch (e) {
-      this.logger.error(e.message);
+      users = (await this.prisma.user.findMany()) as User[];
+    } catch {
       throw new ConflictException(ErrorMessages.USER_LIST_ERROR);
     }
 
@@ -74,7 +74,7 @@ export class UsersService {
     } catch (e) {
       this.logger.warn(e.message);
     }
-    return users.map(this.serializeBigInt);
+    return users.map((user) => serializeObjBigInt(user, ErrorMessages.USER_SERIALIZATION_ERROR));
   }
 
   async findOne(id: number): Promise<User> {
@@ -89,10 +89,8 @@ export class UsersService {
     }
 
     const user = await this.prisma.user.findUnique({ where: { user_id: id } });
-    if (!user) {
-      this.logger.warn(ErrorMessages.USER_NOT_FOUND(id));
-      throw new NotFoundException(ErrorMessages.USER_NOT_FOUND(id));
-    }
+    if (!user) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND(id));
+
     try {
       await this.redisService.saveWithExpiry(
         cachedKey,
@@ -102,10 +100,60 @@ export class UsersService {
     } catch (e) {
       this.logger.warn(e.message);
     }
-    return this.serializeBigInt(user);
+    return serializeObjBigInt(user as User, ErrorMessages.USER_SERIALIZATION_ERROR);
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+    const cachedKey = `${RedisKeys.USER_KEY_PREFIX}${id}`;
+    await this.updateUser(id, updateUserDto);
+
+    try {
+      await this.redisService.delete(cachedKey);
+      await this.redisService.delete(RedisKeys.USER_LIST);
+    } catch (e) {
+      this.logger.warn(e.message);
+    }
+
+    const newUser = (await this.prisma.user.findUnique({ where: { user_id: id } })) as User;
+    if (!newUser) {
+      this.logger.error(ErrorMessages.USER_NOT_FOUND(id));
+      throw new NotFoundException(ErrorMessages.USER_NOT_FOUND(id));
+    }
+
+    return serializeObjBigInt(newUser, ErrorMessages.USER_SERIALIZATION_ERROR);
+  }
+
+  async remove(id: number): Promise<void> {
+    const cachedKey = `${RedisKeys.USER_KEY_PREFIX}${id}`;
+    await this.findOne(id);
+
+    try {
+      await this.profileService.delete(id);
+    } catch {
+      throw new ConflictException(ErrorMessages.PROFILE_DELETION_ERROR);
+    }
+
+    try {
+      await this.prisma.user.delete({ where: { user_id: id } });
+    } catch {
+      throw new ConflictException(ErrorMessages.USER_DELETION_ERROR);
+    }
+
+    try {
+      await this.redisService.delete(cachedKey);
+      await this.redisService.delete(RedisKeys.USER_LIST);
+    } catch (e) {
+      this.logger.warn(e.message);
+    }
+  }
+
+  async findByEmail(email: string): Promise<User> {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND_BY_EMAIL(email));
+    return serializeObjBigInt(user as User, ErrorMessages.USER_SERIALIZATION_ERROR);
+  }
+
+  private async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<void> {
     const user = await this.prisma.user.findUnique({ where: { user_id: id } });
     if (!user) {
       this.logger.error(ErrorMessages.USER_NOT_FOUND(id));
@@ -116,90 +164,21 @@ export class UsersService {
       await this.checkIfUserExistsByEmail(updateUserDto.email);
     }
 
-    const updatedUser = this.constructUpdatedUser(updateUserDto);
-
-    if (updateUserDto.last_login) {
-      const parsedDate = parseISO(updateUserDto.last_login as unknown as string);
-      if (!isDate(parsedDate) || isNaN(parsedDate.getTime())) {
-        this.logger.error(ErrorMessages.INVALID_LAST_LOGIN);
-        throw new BadRequestException(ErrorMessages.INVALID_LAST_LOGIN);
-      }
-      updatedUser.last_login = updateUserDto.last_login;
-    }
-
-    await this.prisma.user.update({
-      where: { user_id: id },
-      data: updatedUser,
-    });
-
+    const { status, ...updateUser } = updateUserDto;
+    const statIsValid = status === UserStatus.active || status === UserStatus.deleted;
     try {
-      await this.redisService.delete(RedisKeys.USER_LIST);
-    } catch (e) {
-      this.logger.warn(e.message);
-    }
-
-    const newUser = await this.prisma.user.findUnique({ where: { user_id: id } });
-    if (!newUser) {
-      this.logger.error(ErrorMessages.USER_NOT_FOUND(id));
-      throw new NotFoundException(ErrorMessages.USER_NOT_FOUND(id));
-    }
-
-    return this.serializeBigInt(newUser);
-  }
-
-  async remove(id: number): Promise<void> {
-    await this.findOne(id);
-    try {
-      await this.prisma.user.delete({ where: { user_id: id } });
+      await this.prisma.user.update({
+        where: { user_id: id },
+        data: statIsValid ? updateUserDto : updateUser,
+      });
     } catch (e) {
       this.logger.error(e.message);
-      throw new ConflictException(ErrorMessages.USER_DELETION_ERROR);
+      throw new BadRequestException(ErrorMessages.USER_UPDATING_ERROR);
     }
-
-    try {
-      await this.redisService.delete(RedisKeys.USER_LIST);
-    } catch (e) {
-      this.logger.warn(e.message);
-    }
-  }
-
-  private serializeBigInt(user: User): User {
-    try {
-      return JSON.parse(JSON.stringify(user, serializeBigInt)) as User;
-    } catch (e) {
-      this.logger.error(e.message);
-      throw new BadRequestException(ErrorMessages.USER_SERIALIZATION_ERROR);
-    }
-  }
-
-  private constructUpdatedUser(updateUserDto: UpdateUserDto): Partial<User> {
-    const updatedUser: Partial<User> = {};
-
-    if (updateUserDto.email) {
-      updatedUser.email = updateUserDto.email;
-    }
-
-    if (updateUserDto.password_hash) {
-      updatedUser.password_hash = updateUserDto.password_hash;
-    }
-
-    if (updateUserDto.is_online !== undefined) {
-      if (typeof updateUserDto.is_online === 'boolean') {
-        updatedUser.is_online = updateUserDto.is_online;
-      } else {
-        this.logger.error(ErrorMessages.INVALID_IS_ONLINE);
-        throw new BadRequestException(ErrorMessages.INVALID_IS_ONLINE);
-      }
-    }
-
-    return updatedUser;
   }
 
   private async checkIfUserExistsByEmail(email: string): Promise<void> {
-    const existingUser = await this.prisma.user.findUnique({ where: { email } });
-    if (existingUser) {
-      this.logger.error(ErrorMessages.EMAIL_ALREADY_EXISTS);
-      throw new ConflictException(ErrorMessages.EMAIL_ALREADY_EXISTS);
-    }
+    const userExists = await this.prisma.user.findUnique({ where: { email } });
+    if (userExists) throw new ConflictException(ErrorMessages.EMAIL_ALREADY_EXISTS);
   }
 }

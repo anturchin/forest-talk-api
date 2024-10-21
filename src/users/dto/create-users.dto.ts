@@ -1,28 +1,36 @@
-import { IsBoolean, IsEmail, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsDateString, IsEmail, IsNotEmpty, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+
+export enum UserStatus {
+  active = 'active',
+  deleted = 'deleted',
+}
 
 export class CreateUserDto {
   @ApiProperty({ description: 'Email пользователя', example: 'user@mail.ru' })
-  @IsEmail()
+  @IsEmail({}, { message: 'Неверный формат email' })
+  @IsNotEmpty({ message: 'Email не должен быть пустым' })
   email: string;
 
   @ApiProperty({ description: 'Пароль пользователя', example: 'Хеш пароля пользователя' })
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Пароль не должен быть пустым' })
   password_hash: string;
 
-  @ApiProperty({ description: 'Публичный ключ', example: 'Публичный ключ пользователя' })
-  @IsNotEmpty()
-  public_key: string;
-
-  @ApiProperty({ description: 'Приватный ключ', example: 'Приватный ключ пользователя' })
-  @IsNotEmpty()
-  private_key: string;
-
-  @ApiProperty({ description: 'Статус онлайн', example: false, required: false })
-  @IsBoolean()
+  @ApiProperty({
+    description: 'Статус пользователя',
+    enum: UserStatus,
+    example: UserStatus.active,
+    required: false,
+  })
   @IsOptional()
-  is_online?: boolean;
+  status?: UserStatus;
 
-  @ApiProperty({ description: 'Последний вход', required: false })
+  @ApiProperty({
+    description: 'Время последнего входа в формате ISO с точностью до миллисекунд',
+    example: '2024-10-16T14:30:45.123Z',
+    required: false,
+  })
+  @IsOptional()
+  @IsDateString({}, { message: 'Неверный формат даты. Ожидается ISO формат с миллисекундами.' })
   last_login?: Date;
 }
