@@ -41,8 +41,8 @@ describe('ProfileController', () => {
   it('должен вернуть профиль пользователя при успешном запросе', async () => {
     const mockProfile: Profile = {
       user_id: 1,
-      first_name: 'John',
-      last_name: 'Doe',
+      first_name: 'ann',
+      last_name: 'lebowski',
       updated_at: new Date(),
     };
     jest.spyOn(profileService, 'findById').mockResolvedValue(mockProfile);
@@ -65,8 +65,8 @@ describe('ProfileController', () => {
     const updateProfileDto: UpdateProfileDto = { first_name: 'John', last_name: 'Doe' };
     const updatedProfile: Profile = {
       user_id: 1,
-      first_name: 'John',
-      last_name: 'Doe',
+      first_name: 'ann',
+      last_name: 'lebowski',
       updated_at: new Date(),
     };
 
