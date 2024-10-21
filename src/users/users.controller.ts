@@ -57,7 +57,7 @@ export class UsersController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Удалить пользователя' })
-  @ApiResponse({ status: 204, description: 'Пользователь успешно удален.' })
+  @ApiResponse({ status: 204 })
   @ApiResponse({ status: 404, description: 'Пользователь c указанным ID не найден' })
   @ApiResponse({ status: 400, description: 'Неверный ID пользователя (Bad Request)' })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })

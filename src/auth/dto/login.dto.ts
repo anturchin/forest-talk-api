@@ -11,3 +11,10 @@ export class LoginDto {
   @IsNotEmpty({ message: 'Пароль не должен быть пустым' })
   password_hash: string;
 }
+
+export class LoginResponseDto {
+  @ApiProperty({ type: 'string' })
+  accessToken: string;
+  @ApiProperty({ type: 'string' })
+  refreshToken: string;
+}

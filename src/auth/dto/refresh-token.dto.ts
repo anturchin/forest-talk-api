@@ -6,3 +6,10 @@ export class RefreshTokenDto {
   @IsNotEmpty({ message: 'refresh_token не должен быть пустым' })
   refresh_token: string;
 }
+
+export class RefreshResponseDto {
+  @ApiProperty({ type: 'string' })
+  accessToken: string;
+  @ApiProperty({ type: 'string' })
+  refreshToken: string;
+}

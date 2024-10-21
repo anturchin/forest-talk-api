@@ -2,8 +2,8 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { LoginDto, LoginResponseDto } from './dto/login.dto';
+import { RefreshResponseDto, RefreshTokenDto } from './dto/refresh-token.dto';
 import { AuthService } from './auth.service';
 
 @ApiTags('auth')
@@ -22,7 +22,10 @@ export class AuthController {
 
   @Post('login')
   @ApiOperation({ summary: 'Авторизация' })
-  @ApiResponse({ status: 200, description: 'Пользователь успешно авторизовался' })
+  @ApiResponse({
+    status: 200,
+    type: LoginResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Неверные данные запроса (Bad Request)' })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
   async login(@Body() loginDto: LoginDto) {
@@ -31,7 +34,7 @@ export class AuthController {
 
   @Post('refresh')
   @ApiOperation({ summary: 'Обновить токен пользователя' })
-  @ApiResponse({ status: 200, description: 'Токен пользователя успешно обновлен' })
+  @ApiResponse({ status: 200, type: RefreshResponseDto })
   @ApiResponse({ status: 400, description: 'Неверные данные запроса (Bad Request)' })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
   async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
@@ -40,7 +43,7 @@ export class AuthController {
 
   @Post('logout')
   @ApiOperation({ summary: 'Выход' })
-  @ApiResponse({ status: 200, description: 'Пользователь успешно вышел из системы' })
+  @ApiResponse({ status: 200 })
   @ApiResponse({ status: 400, description: 'Неверные данные запроса (Bad Request)' })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
   async logout(@Body() refreshTokenDto: RefreshTokenDto) {
