@@ -1,6 +1,6 @@
 import { UserGalleryService } from './gallery.service';
 import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ParseIntPipe } from '../../common/pipes/parse-int.pipe';
 import { UserGallery } from '../entities/gallery.entity';
 import { CreateUserGalleryDto } from './dto/create-gallery.dto';
@@ -13,6 +13,7 @@ export class UserGalleryController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id/gallery')
+  @ApiHeader({ name: 'Bearer', required: true, description: 'Access token' })
   @ApiResponse({ status: 200, description: 'Медиа пользователя', type: [UserGallery] })
   @ApiResponse({ status: 401, description: 'Пользователь не авторизован' })
   @ApiResponse({ status: 404, description: 'Пользователь c указанным ID не найден' })
@@ -23,6 +24,7 @@ export class UserGalleryController {
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/gallery')
+  @ApiHeader({ name: 'Bearer', required: true, description: 'Access token' })
   @ApiResponse({
     status: 200,
     description: 'Картинка успешно добавлена в галерею',
@@ -37,6 +39,7 @@ export class UserGalleryController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id/gallery/:imageId')
+  @ApiHeader({ name: 'Bearer', required: true, description: 'Access token' })
   @ApiResponse({ status: 200, description: 'Медиа успешно удалено из галерии' })
   @ApiResponse({ status: 401, description: 'Пользователь не авторизован' })
   @ApiResponse({ status: 404, description: 'Пользователь c указанным ID не найден' })
