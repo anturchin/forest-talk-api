@@ -23,5 +23,9 @@ export const SuccessMessages = {
   USER_CREATE_SUCCESS: 'Пользователь зарегистрирован успешно',
 };
 
+export const REDIS_CLIENT = 'RedisClient';
 export const DEFAULT_CACHE_TTL = 3600;
 export const ONE_DAY_IN_SECONDS = 86400;
+
+export const JWT_ACCESS_SECRET = 'JWT_ACCESS_SECRET';
+export const JWT_REFRESH_SECRET = 'JWT_REFRESH_SECRET';

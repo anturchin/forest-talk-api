@@ -18,6 +18,7 @@ export class ProfileController {
   @ApiOperation({ summary: 'Получить профиль пользователя по ID' })
   @ApiHeader({ name: 'Bearer', required: true, description: 'Access token' })
   @ApiResponse({ status: 200, description: 'Профиль пользователя', type: Profile })
+  @ApiResponse({ status: 401, description: 'Пользователь не авторизован' })
   @ApiResponse({ status: 404, description: 'Пользователь c указанным ID не найден' })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
   async getProfile(@Param('id', ParseIntPipe) userId: number): Promise<Profile> {
@@ -31,6 +32,7 @@ export class ProfileController {
   @ApiOperation({ summary: 'Обновить профиль пользователя по ID' })
   @ApiHeader({ name: 'Bearer', required: true, description: 'Access token' })
   @ApiResponse({ status: 200, description: 'Профиль пользователя', type: Profile })
+  @ApiResponse({ status: 401, description: 'Пользователь не авторизован' })
   @ApiResponse({ status: 404, description: 'Пользователь c указанным ID не найден' })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
   async updateProfile(

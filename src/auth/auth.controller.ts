@@ -39,6 +39,7 @@ export class AuthController {
   @ApiHeader({ name: 'Bearer', required: true, description: 'Refresh token' })
   @ApiResponse({ status: 200, type: RefreshResponseDto })
   @ApiResponse({ status: 400, description: 'Неверные данные запроса (Bad Request)' })
+  @ApiResponse({ status: 401, description: 'Пользователь не авторизован' })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
   async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
     return await this.authService.refresh(refreshTokenDto);
@@ -50,6 +51,7 @@ export class AuthController {
   @ApiHeader({ name: 'Bearer', required: true, description: 'Refresh token' })
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 400, description: 'Неверные данные запроса (Bad Request)' })
+  @ApiResponse({ status: 401, description: 'Пользователь не авторизован' })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
   async logout(@Body() refreshTokenDto: RefreshTokenDto) {
     return await this.authService.logout(refreshTokenDto);

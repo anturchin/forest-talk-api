@@ -6,6 +6,7 @@ import { AuthService } from '../auth.service';
 import { JwtPayload } from '../../common/interfaces';
 import { User } from '../../users/entities/users.entity';
 import { ConfigService } from '@nestjs/config';
+import { JWT_REFRESH_SECRET } from '../../common/constants';
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
@@ -16,7 +17,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get('JWT_REFRESH_SECRET'),
+      secretOrKey: configService.get(JWT_REFRESH_SECRET),
     });
   }
 
