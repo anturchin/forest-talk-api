@@ -16,7 +16,7 @@ export class UserGalleryController {
   @ApiResponse({ status: 404, description: 'Пользователь c указанным ID не найден' })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
   async getAllGallery(@Param('id', ParseIntPipe) id: number): Promise<UserGallery[]> {
-    return this.userGalleryService.getAll(id);
+    return this.userGalleryService.findAll(id);
   }
 
   @Post(':id/gallery')
@@ -35,15 +35,12 @@ export class UserGalleryController {
     return this.userGalleryService.create(createUserGalleryDto);
   }
 
-  @Delete(':id/gallery/:imageId')
+  @Delete('gallery/:imageId')
   @ApiResponse({ status: 200, description: 'Картинка успешно удалена из галерии' })
   @ApiResponse({ status: 401, description: 'Пользователь не авторизован' })
   @ApiResponse({ status: 404, description: 'Пользователь c указанным ID не найден' })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
-  async deleteGallery(
-    @Param('id', ParseIntPipe) id: number,
-    @Param('imageId', ParseIntPipe) imageId: number
-  ): Promise<void> {
-    return this.userGalleryService.delete({ userId: id, imageId });
+  async deleteGallery(@Param('imageId', ParseIntPipe) imageId: number): Promise<void> {
+    return this.userGalleryService.delete(imageId);
   }
 }
