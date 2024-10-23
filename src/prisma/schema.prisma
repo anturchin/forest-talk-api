@@ -20,7 +20,8 @@ model User {
   last_login    DateTime?
   created_at    DateTime   @default(now())
 
-  profile Profile?
+  profile      Profile?
+  user_gallery UserGallery[]
 }
 
 model Profile {
@@ -32,6 +33,15 @@ model Profile {
   avatar_url String?
   bio        String?
   updated_at DateTime  @updatedAt
+
+  user User @relation(fields: [user_id], references: [user_id])
+}
+
+model UserGallery {
+  img_id     BigInt     @id @default(autoincrement())
+  user_id    BigInt
+  img_url    String
+  created_at DateTime @default(now())
 
   user User @relation(fields: [user_id], references: [user_id])
 }

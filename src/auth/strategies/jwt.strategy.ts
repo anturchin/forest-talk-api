@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { AuthService } from '../auth.service';
 import { JwtPayload } from '../../common/interfaces';
+import { JWT_ACCESS_SECRET } from '../../common/constants';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -15,7 +16,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_ACCESS_SECRET'),
+      secretOrKey: configService.get<string>(JWT_ACCESS_SECRET),
     });
   }
 

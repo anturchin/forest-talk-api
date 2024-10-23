@@ -3,15 +3,18 @@ import { AuthService } from './auth.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { RefreshAuthGuard } from '../common/guards/refresh-auth.guard';
 import { SuccessMessages } from '../common/constants';
-import { RegisterDto } from './dto/register.dto';
+import { CheckEmailDto, RegisterDto } from './dto/register.dto';
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
 import { RefreshResponseDto, RefreshTokenDto } from './dto/refresh-token.dto';
+import { UsersService } from '../users/users.service';
+import { BadRequestException } from '@nestjs/common';
 
 jest.mock('../common/guards/refresh-auth.guard');
 
 describe('AuthController', () => {
   let controller: AuthController;
   let authService: AuthService;
+  let userService: UsersService;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
@@ -25,6 +28,12 @@ describe('AuthController', () => {
             logout: jest.fn(),
           },
         },
+        {
+          provide: UsersService,
+          useValue: {
+            checkEmailExists: jest.fn(),
+          },
+        },
       ],
     })
       .overrideGuard(RefreshAuthGuard)
@@ -33,6 +42,7 @@ describe('AuthController', () => {
 
     controller = module.get<AuthController>(AuthController);
     authService = module.get<AuthService>(AuthService);
+    userService = module.get<UsersService>(UsersService);
   });
 
   it('контроллер должен быть определен', () => {
@@ -88,5 +98,27 @@ describe('AuthController', () => {
 
     const result = await controller.logout(refreshToken);
     expect(result).toBeUndefined();
+  });
+
+  it('должен вернуть true, если email существует', async () => {
+    const email = 'lebowski@gmail.com';
+    jest.spyOn(userService, 'checkEmailExists').mockResolvedValue(true);
+
+    const result = await controller.checkEmail({ email } as CheckEmailDto);
+    expect(result).toEqual({ exists: true });
+  });
+
+  it('должен вернуть false, если email не существует', async () => {
+    const email = 'lebowski@gmail.com';
+    jest.spyOn(userService, 'checkEmailExists').mockResolvedValue(false);
+
+    const result = await controller.checkEmail({ email } as CheckEmailDto);
+    expect(result).toEqual({ exists: false });
+  });
+
+  it('должен выбросить исключение, если email не предоставлен', async () => {
+    await expect(controller.checkEmail({ email: '' } as CheckEmailDto)).rejects.toThrow(
+      new BadRequestException('Email обязателен для проверки')
+    );
   });
 });

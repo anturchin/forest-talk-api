@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 
-export const serializeBigInt = (key: string, value: unknown): unknown => {
+const serializeBigInt = (key: string, value: unknown): unknown => {
   if (typeof value === 'bigint') {
     return value.toString();
   }

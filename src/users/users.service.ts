@@ -12,7 +12,7 @@ import { DEFAULT_CACHE_TTL, ErrorMessages } from '../common/constants';
 import { RedisService } from '../redis/redis.service';
 import { RedisKeys } from '../common/interfaces';
 import { PrismaService } from '../prisma/prisma.service';
-import { serializeBigInt, serializeObjBigInt } from '../common/utils/serialize.utils';
+import { serializeObjBigInt } from '../common/utils/serialize.utils';
 import { User } from './entities/users.entity';
 import { ProfileService } from './profile/profile.service';
 
@@ -65,16 +65,20 @@ export class UsersService {
       throw new ConflictException(ErrorMessages.USER_LIST_ERROR);
     }
 
+    const serializedUsers = users.map((user) =>
+      serializeObjBigInt(user, ErrorMessages.USER_SERIALIZATION_ERROR)
+    );
+
     try {
       await this.redisService.saveWithExpiry(
         RedisKeys.USER_LIST,
-        JSON.stringify(users, serializeBigInt),
+        JSON.stringify(serializedUsers),
         DEFAULT_CACHE_TTL
       );
     } catch (e) {
       this.logger.warn(e.message);
     }
-    return users.map((user) => serializeObjBigInt(user, ErrorMessages.USER_SERIALIZATION_ERROR));
+    return serializedUsers;
   }
 
   async findOne(id: number): Promise<User> {
@@ -91,16 +95,18 @@ export class UsersService {
     const user = await this.prisma.user.findUnique({ where: { user_id: id } });
     if (!user) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND(id));
 
+    const serializedUser = serializeObjBigInt(user as User, ErrorMessages.USER_SERIALIZATION_ERROR);
+
     try {
       await this.redisService.saveWithExpiry(
         cachedKey,
-        JSON.stringify(user, serializeBigInt),
+        JSON.stringify(serializedUser),
         DEFAULT_CACHE_TTL
       );
     } catch (e) {
       this.logger.warn(e.message);
     }
-    return serializeObjBigInt(user as User, ErrorMessages.USER_SERIALIZATION_ERROR);
+    return serializedUser;
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
@@ -153,6 +159,11 @@ export class UsersService {
     return serializeObjBigInt(user as User, ErrorMessages.USER_SERIALIZATION_ERROR);
   }
 
+  async checkEmailExists(email: string): Promise<boolean> {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    return !!user;
+  }
+
   private async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<void> {
     const user = await this.prisma.user.findUnique({ where: { user_id: id } });
     if (!user) {
@@ -178,7 +189,7 @@ export class UsersService {
   }
 
   private async checkIfUserExistsByEmail(email: string): Promise<void> {
-    const userExists = await this.prisma.user.findUnique({ where: { email } });
+    const userExists = await this.checkEmailExists(email);
     if (userExists) throw new ConflictException(ErrorMessages.EMAIL_ALREADY_EXISTS);
   }
 }

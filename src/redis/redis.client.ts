@@ -1,13 +1,14 @@
 import { FactoryProvider, Logger } from '@nestjs/common';
 import { Redis } from 'ioredis';
 import * as dotenv from 'dotenv';
+import { REDIS_CLIENT } from '../common/constants';
 
 dotenv.config();
 
 export const redisClientFactory: FactoryProvider<Redis> = {
-  provide: 'RedisClient',
+  provide: REDIS_CLIENT,
   useFactory: () => {
-    const logger = new Logger('RedisClient');
+    const logger = new Logger(REDIS_CLIENT);
 
     const redisInstance = new Redis({
       host: process.env.REDIS_HOST || 'localhost',

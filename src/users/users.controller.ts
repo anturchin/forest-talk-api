@@ -19,6 +19,7 @@ export class UsersController {
   @ApiHeader({ name: 'Bearer', required: true, description: 'Access token' })
   @ApiResponse({ status: 201, description: 'Пользователь успешно создан', type: User })
   @ApiResponse({ status: 400, description: 'Неверные данные запроса (Bad Request)' })
+  @ApiResponse({ status: 401, description: 'Пользователь не авторизован' })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
   async create(@Body() createUserDto: CreateUserDto): Promise<User> {
     return await this.userService.create(createUserDto as CreateUserDto);
@@ -29,6 +30,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Получить всех пользователей' })
   @ApiHeader({ name: 'Bearer', required: true, description: 'Access token' })
   @ApiResponse({ status: 200, description: 'Список пользователей', type: [User] })
+  @ApiResponse({ status: 401, description: 'Пользователь не авторизован' })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
   async findAll(): Promise<User[]> {
     return await this.userService.findAll();
@@ -40,6 +42,7 @@ export class UsersController {
   @ApiHeader({ name: 'Bearer', required: true, description: 'Access token' })
   @ApiResponse({ status: 200, description: 'Пользователь найден', type: User })
   @ApiResponse({ status: 404, description: 'Пользователь c указанным ID не найден' })
+  @ApiResponse({ status: 401, description: 'Пользователь не авторизован' })
   @ApiResponse({ status: 400, description: 'Неверный ID пользователя (Bad Request)' })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<User> {
@@ -51,6 +54,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Обновить пользователя' })
   @ApiHeader({ name: 'Bearer', required: true, description: 'Access token' })
   @ApiResponse({ status: 200, description: 'Пользователь обновлен', type: User })
+  @ApiResponse({ status: 401, description: 'Пользователь не авторизован' })
   @ApiResponse({ status: 404, description: 'Пользователь c указанным ID не найден' })
   @ApiResponse({
     status: 400,
@@ -69,6 +73,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Удалить пользователя' })
   @ApiHeader({ name: 'Bearer', required: true, description: 'Access token' })
   @ApiResponse({ status: 204 })
+  @ApiResponse({ status: 401, description: 'Пользователь не авторизован' })
   @ApiResponse({ status: 404, description: 'Пользователь c указанным ID не найден' })
   @ApiResponse({ status: 400, description: 'Неверный ID пользователя (Bad Request)' })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })

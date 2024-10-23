@@ -12,7 +12,13 @@ import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { LoginDto } from './dto/login.dto';
 import { UsersService } from '../users/users.service';
-import { ErrorMessages, ONE_DAY_IN_SECONDS, SuccessMessages } from '../common/constants';
+import {
+  ErrorMessages,
+  JWT_ACCESS_SECRET,
+  JWT_REFRESH_SECRET,
+  ONE_DAY_IN_SECONDS,
+  SuccessMessages,
+} from '../common/constants';
 import { ProfileService } from '../users/profile/profile.service';
 import { JwtPayload, RefreshToken } from '../common/interfaces';
 import { User } from '../users/entities/users.entity';
@@ -56,7 +62,7 @@ export class AuthService {
     const payload: JwtPayload = { sub: user.user_id as number, email: user.email };
     const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '15m' });
     const refreshToken = await this.jwtService.signAsync(payload, {
-      secret: this.configService.get('JWT_REFRESH_SECRET'),
+      secret: this.configService.get(JWT_REFRESH_SECRET),
       expiresIn: '1d',
     });
 
@@ -76,7 +82,7 @@ export class AuthService {
 
     let payload: JwtPayload;
 
-    const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET');
+    const refreshSecret = this.configService.get(JWT_REFRESH_SECRET);
 
     try {
       payload = await this.jwtService.verifyAsync(refresh_token, {
@@ -107,7 +113,7 @@ export class AuthService {
 
     try {
       const payload: JwtPayload = await this.jwtService.verifyAsync(refresh_token, {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        secret: this.configService.get(JWT_REFRESH_SECRET),
         ignoreExpiration: false,
       });
 
@@ -133,7 +139,7 @@ export class AuthService {
   ): Promise<{ accessToken: string; newRefreshToken: string }> {
     const user = await this.findUser(payload);
 
-    const accessSecret = this.configService.get<string>('JWT_ACCESS_SECRET');
+    const accessSecret = this.configService.get(JWT_ACCESS_SECRET);
 
     const accessToken = await this.jwtService.signAsync(
       { sub: user.user_id, email: user.email },

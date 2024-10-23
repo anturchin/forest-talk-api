@@ -9,15 +9,16 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { Profile } from '../entities/profile.entity';
 
 @ApiTags('profile')
-@Controller('users/:id/profile')
+@Controller('users')
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
   @UseGuards(JwtAuthGuard)
-  @Get()
+  @Get(':id/profile')
   @ApiOperation({ summary: 'Получить профиль пользователя по ID' })
   @ApiHeader({ name: 'Bearer', required: true, description: 'Access token' })
   @ApiResponse({ status: 200, description: 'Профиль пользователя', type: Profile })
+  @ApiResponse({ status: 401, description: 'Пользователь не авторизован' })
   @ApiResponse({ status: 404, description: 'Пользователь c указанным ID не найден' })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
   async getProfile(@Param('id', ParseIntPipe) userId: number): Promise<Profile> {
@@ -27,10 +28,11 @@ export class ProfileController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch()
+  @Patch(':id/profile')
   @ApiOperation({ summary: 'Обновить профиль пользователя по ID' })
   @ApiHeader({ name: 'Bearer', required: true, description: 'Access token' })
   @ApiResponse({ status: 200, description: 'Профиль пользователя', type: Profile })
+  @ApiResponse({ status: 401, description: 'Пользователь не авторизован' })
   @ApiResponse({ status: 404, description: 'Пользователь c указанным ID не найден' })
   @ApiResponse({ status: 500, description: 'Внутренняя ошибка сервера (Internal Server Error)' })
   async updateProfile(
