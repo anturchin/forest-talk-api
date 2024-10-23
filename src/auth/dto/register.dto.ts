@@ -59,3 +59,8 @@ export class RegisterDto {
   @IsOptional()
   bio?: string;
 }
+
+export class CheckEmailDto {
+  @IsEmail({}, { message: 'Некорректный email адрес' })
+  email: string;
+}

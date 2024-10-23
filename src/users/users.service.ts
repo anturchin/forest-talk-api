@@ -159,6 +159,11 @@ export class UsersService {
     return serializeObjBigInt(user as User, ErrorMessages.USER_SERIALIZATION_ERROR);
   }
 
+  async checkEmailExists(email: string): Promise<boolean> {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    return !!user;
+  }
+
   private async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<void> {
     const user = await this.prisma.user.findUnique({ where: { user_id: id } });
     if (!user) {
@@ -184,7 +189,7 @@ export class UsersService {
   }
 
   private async checkIfUserExistsByEmail(email: string): Promise<void> {
-    const userExists = await this.prisma.user.findUnique({ where: { email } });
+    const userExists = await this.checkEmailExists(email);
     if (userExists) throw new ConflictException(ErrorMessages.EMAIL_ALREADY_EXISTS);
   }
 }

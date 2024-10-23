@@ -1,16 +1,33 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { BadRequestException, Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiHeader, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { RegisterDto } from './dto/register.dto';
+import { CheckEmailDto, RegisterDto } from './dto/register.dto';
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
 import { RefreshResponseDto, RefreshTokenDto } from './dto/refresh-token.dto';
 import { AuthService } from './auth.service';
 import { RefreshAuthGuard } from '../common/guards/refresh-auth.guard';
+import { UsersService } from '../users/users.service';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UsersService
+  ) {}
+
+  @Get('check-email')
+  @ApiOperation({ summary: 'Проверить, существует ли email в системе' })
+  @ApiQuery({ name: 'email', required: true, description: 'Email для проверки' })
+  @ApiResponse({ status: 200, description: 'Email найден / не найден' })
+  @ApiResponse({ status: 400, description: 'Некорректный email' })
+  async checkEmail(@Query() { email }: CheckEmailDto): Promise<{ exists: boolean }> {
+    if (!email) {
+      throw new BadRequestException('Email обязателен для проверки');
+    }
+    const exists = await this.userService.checkEmailExists(email);
+    return { exists };
+  }
 
   @Post('register')
   @ApiOperation({ summary: 'Регистрация' })
