@@ -1,9 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
+import { IsInt, IsNotEmpty } from 'class-validator';
 
 export class CreateUserGalleryDto {
-  @ApiProperty({ type: 'string', description: 'Идентификатор пользователя' })
+  @ApiProperty({ type: 'number', description: 'Идентификатор пользователя' })
   @IsNotEmpty({ message: 'Поле user_id не должен быть пустым' })
+  @IsInt({ message: 'Поле user_id должно быть числом' })
   user_id: number;
 
   @ApiProperty({ type: 'string', description: 'Путь до картинки в формате "https://example.com"' })

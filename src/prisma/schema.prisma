@@ -38,7 +38,7 @@ model Profile {
 }
 
 model UserGallery {
-  img_id     BigInt   @unique
+  img_id     BigInt     @id @default(autoincrement())
   user_id    BigInt
   img_url    String
   created_at DateTime @default(now())

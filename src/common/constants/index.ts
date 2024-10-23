@@ -21,6 +21,7 @@ export const ErrorMessages = {
   INVALID_PASSWORD_OR_EMAIL: 'Неверный email или пароль',
   INVALID_VALIDATE_USER: 'Пользователь не найден',
   INTERNAL_SERVER_ERROR: 'Внутренняя ошибка сервера: Redis недоступен',
+  SERVER_ERROR: 'Внутренняя ошибка сервера',
 };
 
 export const SuccessMessages = {
