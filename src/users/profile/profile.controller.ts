@@ -9,12 +9,12 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { Profile } from '../entities/profile.entity';
 
 @ApiTags('profile')
-@Controller('users/:id/profile')
+@Controller('users')
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
   @UseGuards(JwtAuthGuard)
-  @Get()
+  @Get(':id/profile')
   @ApiOperation({ summary: 'Получить профиль пользователя по ID' })
   @ApiHeader({ name: 'Bearer', required: true, description: 'Access token' })
   @ApiResponse({ status: 200, description: 'Профиль пользователя', type: Profile })
@@ -28,7 +28,7 @@ export class ProfileController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch()
+  @Patch(':id/profile')
   @ApiOperation({ summary: 'Обновить профиль пользователя по ID' })
   @ApiHeader({ name: 'Bearer', required: true, description: 'Access token' })
   @ApiResponse({ status: 200, description: 'Профиль пользователя', type: Profile })

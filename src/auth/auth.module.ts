@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { RedisModule } from '../redis/redis.module';
+import { JWT_ACCESS_SECRET } from '../common/constants';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { RedisModule } from '../redis/redis.module';
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_ACCESS_SECRET'),
+        secret: configService.get(JWT_ACCESS_SECRET),
         signOptions: { expiresIn: '15m' },
       }),
     }),
