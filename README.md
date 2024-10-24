@@ -2,7 +2,8 @@
 
 **Версия**: `0.0.1`   
 **Деплой**: https://forest-talk-api.onrender.com  
-**Swagger Документация**: https://forest-talk-api.onrender.com/api/docs
+**Swagger Документация**: https://forest-talk-api.onrender.com/api/docs  
+**Таблицы БД**: https://drawsql.app/teams/13243564321/diagrams/foresttalk
 
 ---
 
