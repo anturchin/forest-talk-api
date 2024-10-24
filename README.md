@@ -1,6 +1,6 @@
 # Forest Talk API
 
-**Версия**: `0.0.1`   
+**Версия**: `0.0.1`  
 **Деплой**: https://forest-talk-api.onrender.com  
 **Swagger Документация**: https://forest-talk-api.onrender.com/api/docs  
 **Таблицы БД**: https://drawsql.app/teams/13243564321/diagrams/foresttalk
@@ -51,11 +51,13 @@ forest-talk-api/
 ├── package.json               # Зависимости и скрипты
 └── README.md                  # Описание проекта
 ```
+
 ## Docker
 
 Для запуска проекта в контейнерах используется docker-compose, что позволяет развернуть PostgreSQL и Redis базы данных вместе с приложением.
 
 **Конфигурация Docker Compose:**
+
 ```bash
 version: '3.8'
 services:
@@ -139,6 +141,7 @@ EXPOSE 3000
 # Запуск миграций и старта в продакшене
 CMD [ "sh", "-c", "npm run prisma:migrate && npm run start:prod" ]
 ```
+
 ## Деплой:
 
 1. **Подключение репозитория:** Включите автоматический деплой из вашего репозитория на [render.com](https://render.com).
@@ -160,9 +163,10 @@ DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST
 JWT_ACCESS_SECRET=secret-jwt
 JWT_REFRESH_SECRET=secret-refresh
 ```
+
 3. **Автодеплой:** Включите автоматические деплои при каждом pull request в основную ветку вашего репозитория.
 
-4. **Мониторинг:** Следите за логами приложения на Render для отладки и мониторинга состояния сервиса.  
+4. **Мониторинг:** Следите за логами приложения на Render для отладки и мониторинга состояния сервиса.
 
 ## CI/CD Пайплайн
 
