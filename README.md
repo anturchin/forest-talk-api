@@ -58,41 +58,6 @@ forest-talk-api/
 
 **Конфигурация Docker Compose:**
 
-```bash
-version: '3.8'
-services:
-  db:
-    image: postgres:alpine  # Используется образ PostgreSQL на базе Alpine Linux, легкий и оптимизированный для использования в контейнерах.
-    restart: always  # Автоматически перезапускает контейнер в случае его сбоя.
-    shm_size: 128mb  # Размер разделяемой памяти для PostgreSQL, что помогает улучшить производительность при работе с большими запросами.
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}  # Имя пользователя для подключения к базе данных, берется из переменных окружения.
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}  # Пароль для доступа к базе данных.
-      POSTGRES_DB: ${POSTGRES_DB}  # Имя базы данных, которая будет создана при запуске контейнера.
-    ports:
-      - '5432:5432'  # Проброс порта PostgreSQL для внешнего доступа. Локальный порт 5432 маппится на порт контейнера 5432.
-    volumes:
-      - postgres-data:/var/lib/postgresql/data  # Сохранение данных базы данных на локальной машине через том, чтобы данные не терялись при перезапуске контейнера.
-
-  redis:
-    image: redis:alpine  # Образ Redis на базе Alpine Linux. Redis используется для кэширования данных.
-    restart: always  # Контейнер Redis будет перезапущен автоматически в случае сбоя.
-    ports:
-      - '6379:6379'  # Проброс порта для внешнего доступа к Redis. Локальный порт 6379 маппится на порт контейнера 6379.
-    volumes:
-      - redis-data:/data  # Монтирование тома для хранения данных Redis. Это необходимо для сохранения данных между перезапусками контейнера.
-
-  adminer:
-    image: adminer  # Используется Adminer — веб-интерфейс для управления базами данных, упрощенный аналог phpMyAdmin.
-    restart: always  # Контейнер Adminer будет перезапущен автоматически в случае сбоя.
-    ports:
-      - 8080:8080  # Проброс порта для доступа к веб-интерфейсу Adminer. Локальный порт 8080 маппится на порт контейнера 8080.
-
-volumes:
-  postgres-data:  # Том для хранения данных PostgreSQL.
-  redis-data:  # Том для хранения данных Redis.
-```
-
 - **PostgreSQL:** Используется для управления реляционными данными через Prisma ORM.
 - **Redis:** Используется для кеширования данных и повышения производительности.
 - **Adminer:** Интерфейс для управления базой данных PostgreSQL.
@@ -113,34 +78,7 @@ docker-compose down
 
 ## Деплой на Render
 
-Для деплоя на Render можно использовать следующий Dockerfile:
-
-```bash
-# Базовый образ Node.js
-FROM node:20-alpine
-
-# Рабочая директория
-WORKDIR /app
-
-# Копирование файлов зависимостей и установка
-COPY package*.json ./
-RUN npm install
-
-# Копирование всех файлов приложения
-COPY . .
-
-# Генерация Prisma Client
-RUN npm run prisma:generate
-
-# Сборка приложения
-RUN npm run build
-
-# Открытие порта
-EXPOSE 3000
-
-# Запуск миграций и старта в продакшене
-CMD [ "sh", "-c", "npm run prisma:migrate && npm run start:prod" ]
-```
+Для деплоя на Render можно использовать Dockerfile:
 
 ## Деплой:
 
@@ -172,38 +110,7 @@ JWT_REFRESH_SECRET=secret-refresh
 
 Для обеспечения автоматического тестирования и сборки на каждый пуш в ветку develop, используется GitHub Actions.
 
-### Конфигурация CI:
-
-```bash
-name: Node.js CI
-
-on:
-  push:
-    branches: [ "develop" ]
-  pull_request:
-    branches: [ "develop" ]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20.x]
-    steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: npm run ci:format
-    - run: npm run lint
-    - run: npm run test
-    - run: npm run build
-```
-
-### Описание:
+### Описание CI:
 
 1. **Запуск пайплайна**:  
    Пайплайн запускается при каждом пуше или pull request в ветку develop.
